@@ -28,8 +28,10 @@ $action = empty($uri) ? 'list_folder' : 'download_file';
 // Execute controller.
 switch ($action) {
     case 'list_folder':
-        $appInfo = Dropbox\AppInfo::loadFromJsonFile($docroot . '/dropbox.json');
-        $webAuth = new Dropbox\WebAuth($appInfo, 'DownloadProxy/0.1');
+        $webAuthBuilder = new Ob_Ivan\DropboxProxy\WebAuthBuilder(
+            $docroot . '/dropbox.json',
+            'DownloadProxy/0.1'
+        );
         // TODO
         print 'Folder listing is not yet supported. Please come back later.';
         break;
