@@ -28,7 +28,12 @@ if ($config['debug']) {
     $app['debug'] = true;
 }
 
-// Routing and controllers.
+// Routing and controllers //
+
+$app->get('/dropbox-auth-finish', function () {
+    // TODO: Обработать успешное получение токена доступа.
+})->bind('dropbox-auth-finish');
+
 $app->get('/{file}', function ($file) use ($app) {
     // Download a file.
     $filename = implode(DIRECTORY_SEPARATOR, [$app['docroot'], $app['config']['storage'], $file]);
@@ -46,9 +51,11 @@ $app->get('/', function () use ($app) {
         $app['docroot'] . '/dropbox.json',
         'DownloadProxy/0.1',
         $app->url('dropbox-auth-finish'),
-        $_SESSION,
+        new Ob_Ivan\DropboxProxy\SessionAsArray($app['session']),
         'csrf'
     );
+    return $app->redirect($webAuthBuilder->getWebAuth()->start());
+
     // TODO: folder listing
     return 'Folder listing is not yet supported. Please come back later.';
 });
