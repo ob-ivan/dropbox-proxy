@@ -8,7 +8,7 @@ require_once $docroot . '/vendor/autoload.php';
  *
  * Config is a json file reposing at config.json in the document root.
  *  {
- *      baseUrl : String each request's path starts with. Defaults to '/'.
+ *      debug   : Boolean which should be true only in development environment.
  *      storage : Path to the distributed files' directory relative to the document root.
  *  }
 **/
@@ -16,50 +16,34 @@ $configFilename = $docroot . '/config.json';
 $configContent = file_get_contents($configFilename);
 $config = json_decode($configContent, true);
 
-// Determine command.
-$uri = $_SERVER['REQUEST_URI'];
-if (substr($uri, 0, strlen($config['baseUrl'])) !== $config['baseUrl']) {
-    print 'Unexpected request path. Expecting request with base url "' . $config['baseUrl'] . '"';
-    die;
-}
-$uri = substr($uri, strlen($config['baseUrl']));
-$action = empty($uri) ? 'list_folder' : 'download_file';
-
-// Execute controller.
-switch ($action) {
-    case 'list_folder':
-        $webAuthBuilder = new Ob_Ivan\DropboxProxy\WebAuthBuilder(
-            $docroot . '/dropbox.json',
-            'DownloadProxy/0.1'
-        );
-        // TODO
-        print 'Folder listing is not yet supported. Please come back later.';
-        break;
-
-    case 'download_file':
-        $filename = implode(DIRECTORY_SEPARATOR, [$docroot, $config['storage'], $uri]);
-
-        if (file_exists($filename)) {
-            // copy-pasted from php.net/readfile
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=' . basename($filename));
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($filename));
-            ob_clean();
-            flush();
-            readfile($filename);
-        } else {
-            header('HTTP/1.0 404 Not found');
-            print 'File "' . $uri . '" was not found on server. Check for typos or contact system administrator.';
-        }
-        break;
-
-    default:
-        print 'Unknown command "' . $action . '".';
-        break;
+$app = new Silex\Application([
+    'docroot' => $docroot,
+    'config'  => $config,
+]);
+if ($config['debug']) {
+    $app['debug'] = true;
 }
 
+// Routing and controllers.
+$app->get('/', function () use ($app) {
+    $webAuthBuilder = new Ob_Ivan\DropboxProxy\WebAuthBuilder(
+        $app['docroot'] . '/dropbox.json',
+        'DownloadProxy/0.1'
+    );
+    // TODO: folder listing
+    return 'Folder listing is not yet supported. Please come back later.';
+});
+
+$app->get('/{file}', function ($file) use ($app) {
+    // Download a file.
+    $filename = implode(DIRECTORY_SEPARATOR, [$app['docroot'], $app['config']['storage'], $file]);
+    if (! file_exists($filename)) {
+        return
+            'File "' . $file . '" was not found on server. ' .
+            'Check for typos or contact system administrator.'
+        ;
+    }
+    return $app->sendFile($filename);
+});
+
+$app->run();
