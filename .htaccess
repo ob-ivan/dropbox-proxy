@@ -1,6 +1,5 @@
 
 RewriteEngine On
-RewriteBase /score/
 
 RewriteRule ^(\.git|vendor) - [F]
 
