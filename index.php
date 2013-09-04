@@ -1,9 +1,24 @@
 <?php
 
-$uri = $_SERVER['REQUEST_URI'];
+/**
+ * Read config.
+ *
+ * Config is a json file reposing at config.json in the document root.
+ *  {
+ *      baseUrl : String each request's path starts with. Defaults to '/'.
+ *      storage : Path to the distributed files' directory relative to the document root.
+ *  }
+**/
+$docroot = __DIR__;
+$configFilename = $docroot . '/config.json';
+$configContent = file_get_contents($configFilename);
+$config = json_decode($configContent, true);
 
+// Determine command.
+$uri = $_SERVER['REQUEST_URI'];
 $action = $uri === '/score/' ? 'list_folder' : 'download_file';
 
+// Execute controller.
 switch ($action) {
     case 'list_folder':
         print 'Folder listing is not yet supported. Please come back later.';
