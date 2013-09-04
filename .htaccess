@@ -1,1 +1,9 @@
 Options +Indexes
+
+RewriteEngine On
+RewriteBase /score/
+
+RewriteRule ^(\.git|vendor) - [F]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule (.*) index.php [L]
