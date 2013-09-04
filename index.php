@@ -16,7 +16,12 @@ $config = json_decode($configContent, true);
 
 // Determine command.
 $uri = $_SERVER['REQUEST_URI'];
-$action = $uri === '/score/' ? 'list_folder' : 'download_file';
+if (substr($uri, 0, strlen($config['baseUrl'])) !== $config['baseUrl']) {
+    print 'Unexpected request path. Expecting request with base url "' . $config['baseUrl'] . '"';
+    die;
+}
+$uri = substr($uri, strlen($config['baseUrl']));
+$action = empty($uri) ? 'list_folder' : 'download_file';
 
 // Execute controller.
 switch ($action) {
@@ -25,7 +30,7 @@ switch ($action) {
         break;
 
     case 'download_file':
-        $filename = dirname(__FILE__) . $uri;
+        $filename = implode(DIRECTORY_SEPARATOR, [$docroot, $config['storage'], $uri]);
 
         if (file_exists($filename)) {
             // copy-pasted from php.net/readfile
@@ -42,7 +47,7 @@ switch ($action) {
             readfile($filename);
         } else {
             header('HTTP/1.0 404 Not found');
-            print 'File ' . $uri . ' was not found on server. Check for typos or contact system administrator.';
+            print 'File "' . $uri . '" was not found on server. Check for typos or contact system administrator.';
         }
         break;
 
