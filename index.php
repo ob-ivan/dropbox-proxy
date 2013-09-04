@@ -1,5 +1,8 @@
 <?php
 
+$docroot = __DIR__;
+require_once $docroot . '/vendor/autoload.php';
+
 /**
  * Read config.
  *
@@ -9,7 +12,6 @@
  *      storage : Path to the distributed files' directory relative to the document root.
  *  }
 **/
-$docroot = __DIR__;
 $configFilename = $docroot . '/config.json';
 $configContent = file_get_contents($configFilename);
 $config = json_decode($configContent, true);
@@ -26,6 +28,9 @@ $action = empty($uri) ? 'list_folder' : 'download_file';
 // Execute controller.
 switch ($action) {
     case 'list_folder':
+        $appInfo = Dropbox\AppInfo::loadFromJsonFile($docroot . '/dropbox.json');
+        $webAuth = new Dropbox\WebAuth($appInfo, 'DownloadProxy/0.1');
+        // TODO
         print 'Folder listing is not yet supported. Please come back later.';
         break;
 
