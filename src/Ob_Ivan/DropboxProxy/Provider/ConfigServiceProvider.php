@@ -16,7 +16,7 @@
  * This provides requires parameters:
  *  [config.path]   Path to the config file.
 **/
-namespace Ob_Ivan\DropboxProxy;
+namespace Ob_Ivan\DropboxProxy\Provider;
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
