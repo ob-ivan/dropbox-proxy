@@ -23,14 +23,20 @@ like following:
 $codeDir = <path/to/private_folder>;
 require_once $codeDir . '/bootstrap.php';
 $app = new Ob_Ivan\DropboxProxy\Application\WebApplication([
-    'config.path'   => $codeDir . '/config.json',
-    'docroot'       => __DIR__,
+    'docroot'                   => __DIR__,
+    'config.path'               => $codeDir . '/config.json',
+    'dropbox.auth_info.json'    => $codeDir . '/dropbox.json',
 ]);
 $app->run();
 ```
 
-You'll need the `config.json` file mentioned above. It may contain
-an empty object at first, and that's enough for your proxy to run.
+You'll need to create two files mentioned in the above code block.
+`dropbox.json` must contain the app key and secret which you
+can receive on the Dropbox site when you register an app.
+Go to https://www.dropbox.com/developers/apps if you don't have one.
+
+You will also need the `config.json` file. It may contain an empty
+object at first, and that's enough for your proxy to run.
 But as it knows nothing about your account or your dropbox folder,
 you'll have to generate an access token and put it into `config.json`.
 
@@ -60,5 +66,5 @@ authorization code:
 
 We remove authorization code because it can be used only once to obtain
 the access token. This also means that if you don't store the access token
-you'll have to go again to `http://<your.domain>/dropbox-auth-start`.
+you'll have to start over from `http://<your.domain>/dropbox-auth-start`.
 
