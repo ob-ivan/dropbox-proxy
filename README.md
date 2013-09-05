@@ -15,6 +15,10 @@ First of all you'll have to clone the repo to the private folder:
 
     $ git clone git@github.com:ob-ivan/dropbox-proxy.git ~/private_folder
 
+Run composer to install dependencies:
+
+    $ composer install
+
 Next create a front controller file (index.php) in the public folder
 like following:
 
@@ -68,3 +72,7 @@ We remove authorization code because it can be used only once to obtain
 the access token. This also means that if you don't store the access token
 you'll have to start over from `http://<your.domain>/dropbox-auth-start`.
 
+Now you can see the reason why we put `config.json` and `dropbox.json`
+to the private folder. This is because both of them contain sensitive data
+which should be kept safe even if web server fails to deny access to
+distinct files in the public folder.
