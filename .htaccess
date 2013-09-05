@@ -1,7 +1,7 @@
 
 RewriteEngine On
 
-RewriteRule ^(\.git|vendor) - [F]
+RewriteRule ^(\.git|config|bin|src|vendor) - [F]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule (.*) index.php [L]
