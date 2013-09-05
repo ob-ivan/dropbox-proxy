@@ -1,6 +1,10 @@
 <?php
-namespace Ob_Ivan\DropboxProxy;
+/**
+ * An empty application with a minimal set of pre-registered providers.
+**/
+namespace Ob_Ivan\DropboxProxy\Application;
 
+use Ob_Ivan\DropboxProxy\Provider\ConfigServiceProvider;
 use Silex\Application as ParentApplication;
 use Silex\Application\UrlGeneratorTrait;
 use Silex\Provider\SessionServiceProvider;
@@ -14,6 +18,7 @@ class Application extends ParentApplication
     {
         parent::__construct($values);
 
+        $this->register(new ConfigServiceProvider());
         $this->register(new SessionServiceProvider());
         $this->register(new UrlGeneratorServiceProvider());
     }
