@@ -7,25 +7,10 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 $docroot = __DIR__;
 require_once $docroot . '/vendor/autoload.php';
 
-/**
- * Read config.
- *
- * Config is a json file reposing at config.json in the document root.
- *  {
- *      accessToken : String identifying client requests.
- *      debug       : Boolean which should be true only in development environment.
- *      storage     : Path to the distributed files' directory relative to the document root.
- *  }
-**/
-$configFilename = $docroot . '/config.json';
-$configContent = file_get_contents($configFilename);
-$config = json_decode($configContent, true);
-
 $app = new Ob_Ivan\DropboxProxy\Application([
     'docroot' => $docroot,
-    'config'  => $config,
 ]);
-if ($config['debug']) {
+if ($app['config']['debug']) {
     $app['debug'] = true;
 }
 
