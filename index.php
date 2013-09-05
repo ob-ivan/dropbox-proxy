@@ -66,7 +66,7 @@ $app['dropbox.web_auth'] = $app->share(function () use ($app) {
 // Routing and controllers //
 
 $app->get('/dropbox-auth-start', function () use ($app) {
-    // Redirect to Dropbox page and generate an authorization token.
+    // Redirect to Dropbox page and generate an authorization code.
     return $app->redirect($app['dropbox.web_auth']->start());
 })->bind('dropbox-auth-start');
 
@@ -95,7 +95,8 @@ $app->get('/{file}', function ($file) use ($app) {
 
 $app->get('/', function () use ($app) {
 
-    print_r($app['dropbox.client']->getAccountInfo()); die; // debug
+    $folderMetadata = $app['dropbox.client']->getMetadataWithChildren('/');
+    return '<pre>' . print_r($folderMetadata, true) . '</pre>'; // debug
 
     // TODO: folder listing
     return 'Folder listing is not yet supported. Please come back later.';
