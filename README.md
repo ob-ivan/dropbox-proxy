@@ -54,7 +54,7 @@ characters. Put it into `config.json` like follows:
 
 ```json
 {
-    "code" : "<AUTHORIZATION_CODE_GOES_HERE>"
+    "authCode" : "<AUTHORIZATION_CODE_GOES_HERE>"
 }
 ```
 

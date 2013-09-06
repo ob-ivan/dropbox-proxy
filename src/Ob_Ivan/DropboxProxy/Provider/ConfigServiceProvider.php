@@ -5,7 +5,7 @@
  * Config is a json file with the following structure.
  *  {
  *      accessToken : String identifying client requests.
- *      code        : Authorization code that can be used once to obtain accessToken.
+ *      authCode    : Authorization code that can be used once to obtain accessToken.
  *      storage     : (temporary) Path to the distributed files' directory relative to the document root.
  *  }
  *

@@ -9,39 +9,18 @@ class WebApplication extends Application
 
         // Additional services //
 
-        // TODO: Encapsulate these in a DropboxServiceProvider and publish it.
-        /**
-         * TODO: Output the instruction.
-         *  - Go to /dropbox-auth-start
-         *  - Get access code and store it to config.json.
-         *  - Go to /dropbox-auth-finish
-         *  - Get accessToken and store it to config.json.
-         *  - Done.
-        **/
-        /**
-         * TODO: Automate the process.
-        **/
-        /*
-        // TODO: Find a decent way to link [dropbox.access_token] to [config][access_token].
-        $this['dropbox.access_token'] = $this->share(function () {
-            if (! isset($this['config']['accessToken'])) {
-                throw new Exception('No accessToken is set in config.');
+        $this['dropbox.client_identifier'] = 'DownloadProxy/0.1';
+        $accessTokenFactory = $this->raw('dropbox.access_token');
+        $this['dropbox.access_token'] = $this->share(function () use ($accessTokenFactory) {
+            if (isset($this['config']['accessToken'])) {
+                return $this['config']['accessToken'];
             }
-            return $this['config']['accessToken'];
+            return $accessTokenFactory($this);
         });
-        */
-        $this['dropbox.app_info'] = $this->share(function () {
-            return Dropbox\AppInfo::loadFromJsonFile($this['docroot'] . '/dropbox.json');
-        });
-        $this['dropbox.client'] = $this->share(function () {
-            return new Dropbox\Client($this['dropbox.access_token'], $this['dropbox.client_identifier']);
-        });
-        // $this['dropbox.client_identifier'] = 'DownloadProxy/0.1';
-        $this['dropbox.web_auth'] = $this->share(function () {
-            return new Dropbox\WebAuthNoRedirect(
-                $this['dropbox.app_info'],
-                $this['dropbox.client_identifier']
-            );
+        $this['dropbox.auth_code'] = $this->share(function () {
+            if (isset($this['config']['authCode'])) {
+                return $this['config']['authCode'];
+            }
         });
 
         // Routing and controllers //
@@ -52,14 +31,7 @@ class WebApplication extends Application
         })->bind('dropbox-auth-start');
 
         $this->get('/dropbox-auth-finish', function () {
-            try {
-                // Authorization code can be used only once to obtain accessToken.
-                list($accessToken, $userId) = $this['dropbox.web_auth']->finish($this['config']['code']);
-            }
-            catch (Dropbox\Exception $e) {
-                throw new Exception('Error communicating with Dropbox API: ' . $e->getMessage(), 0, $e);
-            }
-            return $accessToken;
+            return $this['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
         $this->get('/{file}', function ($file) {

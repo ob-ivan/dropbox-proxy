@@ -24,10 +24,10 @@
  *      A string value used to prove your app's identity while making requests.
  *      This is a service because its default behavior is to lookup for
  *      [dropbox.auth_code] parameter and call [dropbox.web_auth] service
- *      to obtain the access token value. Note that in this case it is your
+ *      to obtain the access token value. Note that in app case it is your
  *      responsibility to store the access token value, or else the auth code
  *      value will be wasted.
- *      Once you have stored access token value you can substitute this service
+ *      Once you have stored access token value you can substitute app service
  *      with its value in your application:
  *          $app['dropbox.access_token'] = file_get_contents('access_token.txt');
  *
@@ -67,6 +67,9 @@
  *  [dropbox.access_token] it will contain the longly desired access token
  *  value. It is recommended that you store it and from now on provide its
  *  value to [dropbox.access_token] explicitly.
+ *
+ *  Please refer to Dropbox\Client full documentation on what overwhelming
+ *  possibilities it brings into your hands.
 **/
 namespace Ob_Ivan\DropboxProxy\Provider;
 
@@ -77,6 +80,36 @@ class DropboxServiceProvider implements ServiceProviderInterface
 {
     function register(Application $app)
     {
+        $app['dropbox.access_token'] = $app->share(function () use ($app) {
+            try {
+                // Authorization code can be used only once to obtain accessToken.
+                list($accessToken, $userId) =
+                    $app['dropbox.web_auth']->finish($app['dropbox.auth_code']);
+            }
+            catch (Dropbox\Exception $e) {
+                throw new Exception(
+                    'Error communicating with Dropbox API: ' . $e->getMessage(),
+                    0,
+                    $e
+                );
+            }
+            return $accessToken;
+        });
+        $app['dropbox.app_info'] = $app->share(function () use ($app) {
+            return Dropbox\AppInfo::loadFromJsonFile($app['dropbox.app_info.json']);
+        });
+        $app['dropbox.client'] = $app->share(function () use ($app) {
+            return new Dropbox\Client(
+                $app['dropbox.access_token'],
+                $app['dropbox.client_identifier']
+            );
+        });
+        $app['dropbox.web_auth'] = $app->share(function () use ($app) {
+            return new Dropbox\WebAuthNoRedirect(
+                $app['dropbox.app_info'],
+                $app['dropbox.client_identifier']
+            );
+        });
     }
 
     function boot(Application $app)
