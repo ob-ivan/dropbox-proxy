@@ -43,8 +43,30 @@
  *      process and unexpired), otherwise exceptions will be thrown.
  *
  *  - [dropbox.web_auth]
+ *      An instance of Dropbox\WebAuth used in the authorization process to
+ *      initialize it by calling its start() method, and to obtain access token
+ *      by calling finish() method with auth code as its argument.
  *
- * Workflow
+ * Usage:
+ *  To perform actual requests to Dropbox API you need an access token.
+ *  If you have one provide its value to [dropbox.access_token] explicitly,
+ *  and you are set to start using [dropbox.client] object.
+ *
+ *  If you don't have an access token, you'll have to go through the authorization
+ *  process which starts with storing your app's credentials in a json file
+ *  and providing [dropbox.app_info.json] with a path to that file.
+ *  Once app key and secret are known you can call [dropbox.web_auth]->start()
+ *  and it will return you a website link. Log in to Dropbox with your browser
+ *  and open that link.
+ *
+ *  There Dropbox will ask you if you are willing to reveal all the secrets
+ *  your Dropbox folder conceals to your app, and of course you are because
+ *  you are still in full control of what your app makes downloadable by the
+ *  public and what not. Click 'Accept' and you will receive the authorization
+ *  code. Provide its value to [dropbox.auth_code] and next time you access
+ *  [dropbox.access_token] it will contain the longly desired access token
+ *  value. It is recommended that you store it and from now on provide its
+ *  value to [dropbox.access_token] explicitly.
 **/
 namespace Ob_Ivan\DropboxProxy\Provider;
 
