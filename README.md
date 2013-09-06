@@ -27,6 +27,7 @@ like following:
 $codeDir = <path/to/private_folder>;
 require_once $codeDir . '/bootstrap.php';
 $app = new Ob_Ivan\DropboxProxy\Application\WebApplication([
+    'debug'                     => false, // You can set this to true in development.
     'docroot'                   => __DIR__,
     'config.path'               => $codeDir . '/config.json',
     'dropbox.auth_info.json'    => $codeDir . '/dropbox.json',
@@ -76,3 +77,19 @@ Now you can see the reason why we put `config.json` and `dropbox.json`
 to the private folder. This is because both of them contain sensitive data
 which should be kept safe even if web server fails to deny access to
 distinct files in the public folder.
+
+MIT License
+===========
+You can use this code on terms defined per MIT License. See LICENSE.txt for details.
+
+Used Software
+=============
+1. This whole project would be impossible without
+[Dropbox PHP SDK](https://www.dropbox.com/developers/core/sdks/php) which is
+generously provided by Dropbox Inc. under
+[MIT License](https://github.com/dropbox/dropbox-sdk-php/blob/master/License.txt).
+
+2. Web Application is based on the [Silex framework](https://github.com/fabpot/Silex)
+which is available under
+[MIT License](https://github.com/fabpot/Silex/blob/master/LICENSE).
+
