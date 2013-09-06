@@ -6,15 +6,15 @@
  *  {
  *      accessToken : String identifying client requests.
  *      code        : Authorization code that can be used once to obtain accessToken.
- *      debug       : Boolean which should be true only in development environment.
  *      storage     : (temporary) Path to the distributed files' directory relative to the document root.
  *  }
  *
- * This provider defines:
+ * Parameters:
+ *  [config.path]   (required) Path to the config file.
+ *
+ * Services:
  *  [config]        PHP array that contains data from the file.
  *
- * This provides requires parameters:
- *  [config.path]   Path to the config file.
 **/
 namespace Ob_Ivan\DropboxProxy\Provider;
 
