@@ -25,16 +25,17 @@ class ConfigServiceProvider implements ServiceProviderInterface
 {
     function register(Application $app)
     {
+        $app['config'] = $app->share(function () use ($app) {
+            if (! isset($app['config.path'])) {
+                throw new Exception(
+                    'Config service requires [config.path] parameter to be defined'
+                );
+            }
+            return json_decode(file_get_contents($app['config.path']), true);
+        });
     }
 
     function boot(Application $app)
     {
-        if (! isset($app['config.path'])) {
-            throw new Exception(
-                'Config service requires [config.path] parameter to be defined'
-            );
-        }
-        $configContent = file_get_contents($app['config.path']);
-        $app['config'] = json_decode($configContent, true);
     }
 }
