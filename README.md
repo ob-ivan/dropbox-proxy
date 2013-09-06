@@ -89,7 +89,6 @@ Used Software
 generously provided by Dropbox Inc. under
 [MIT License](https://github.com/dropbox/dropbox-sdk-php/blob/master/License.txt).
 
-2. Web Application is based on the [Silex framework](https://github.com/fabpot/Silex)
-which is available under
-[MIT License](https://github.com/fabpot/Silex/blob/master/LICENSE).
+2. Web Application is based on the [Silex framework](http://silex.sensiolabs.org/)
+which is available under [MIT License](https://github.com/fabpot/Silex/blob/master/LICENSE).
 
