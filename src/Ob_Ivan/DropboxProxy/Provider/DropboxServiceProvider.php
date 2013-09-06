@@ -73,6 +73,7 @@
 **/
 namespace Ob_Ivan\DropboxProxy\Provider;
 
+use Dropbox;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 
