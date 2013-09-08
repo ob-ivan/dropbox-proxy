@@ -23,5 +23,24 @@ class Application extends ParentApplication
         $this->register(new DropboxServiceProvider());
         $this->register(new SessionServiceProvider());
         $this->register(new UrlGeneratorServiceProvider());
+
+        // Set a bridge between [dropbox] and [config] services.
+
+        $accessTokenFactory = $this->raw('dropbox.access_token');
+        $this['dropbox.access_token'] = $this->share(function () use ($accessTokenFactory) {
+            if (isset($this['config']['accessToken'])) {
+                return $this['config']['accessToken'];
+            }
+            return $accessTokenFactory($this);
+        });
+        $this['dropbox.auth_code'] = $this->share(function () {
+            if (isset($this['config']['authCode'])) {
+                return $this['config']['authCode'];
+            }
+        });
+
+        // Assign default values for parameters.
+
+        $this['dropbox.client_identifier'] = 'DownloadProxy/0.1';
     }
 }

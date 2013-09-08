@@ -1,4 +1,17 @@
 <?php
+/**
+ * An application handling web requests.
+ *
+ * Basic routes and controllers are defined here, but some parameters are
+ * required for this to work.
+ *
+ * Usage:
+ *
+ *  $app = new WebApplication([
+ *      'config.path'               => <Path to the config file. See ConfigServiceProvider for details>,
+ *      'dropbox.auth_info.json'    => <Path to json file with your app's credentials>,
+ *  ]);
+**/
 namespace Ob_Ivan\DropboxProxy\Application;
 
 class WebApplication extends Application
@@ -7,24 +20,9 @@ class WebApplication extends Application
     {
         parent::__construct($values);
 
-        // Additional services //
-
-        $this['dropbox.client_identifier'] = 'DownloadProxy/0.1';
-        $accessTokenFactory = $this->raw('dropbox.access_token');
-        $this['dropbox.access_token'] = $this->share(function () use ($accessTokenFactory) {
-            if (isset($this['config']['accessToken'])) {
-                return $this['config']['accessToken'];
-            }
-            return $accessTokenFactory($this);
-        });
-        $this['dropbox.auth_code'] = $this->share(function () {
-            if (isset($this['config']['authCode'])) {
-                return $this['config']['authCode'];
-            }
-        });
-
         // Routing and controllers //
 
+        // Obtain access token with a two-step authorization.
         $this->get('/dropbox-auth-start', function () {
             // Redirect to Dropbox page and generate an authorization code.
             return $this->redirect($this['dropbox.web_auth']->start());
@@ -34,6 +32,7 @@ class WebApplication extends Application
             return $this['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
+        // Download a file.
         $this->get('/{file}', function ($file) {
             // Download a file.
             $filename = implode(DIRECTORY_SEPARATOR, [$this['docroot'], $this['config']['storage'], $file]);
@@ -46,10 +45,12 @@ class WebApplication extends Application
             return $this->sendFile($filename);
         });
 
+        // List available files.
         $this->get('/', function () {
 
-            $folderMetadata = $this['dropbox.client']->getMetadataWithChildren('/');
-            return '<pre>' . print_r($folderMetadata, true) . '</pre>'; // debug
+            $folderMetadata = $this['dropbox.client']->getMetadataWithChildren($this['config']['root']);
+            $contents = $folderMetadata['contents'];
+            return '<pre>' . print_r($contents, true) . '</pre>'; // debug
 
             // TODO: folder listing
             return 'Folder listing is not yet supported. Please come back later.';
