@@ -1,7 +1,8 @@
 {
     "require" : {
         "dropbox/dropbox-sdk"   : "1.1.*",
-        "silex/silex"           : "1.*"
+        "silex/silex"           : "1.*",
+        "symfony/console"       : "2.3.*"
     },
     "autoload" : {
         "psr-0" : {
