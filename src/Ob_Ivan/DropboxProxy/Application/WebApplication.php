@@ -2,15 +2,13 @@
 /**
  * An application handling web requests.
  *
- * Basic routes and controllers are defined here, but some parameters are
+ * Basic routes and controllers are defined here, but config file is
  * required for this to work.
  *
  * Usage:
  *
- *  $app = new WebApplication([
- *      'config.path'               => <Path to the config file. See ConfigServiceProvider for details>,
- *      'dropbox.auth_info.json'    => <Path to json file with your app's credentials>,
- *  ]);
+ *  $app = new WebApplication(<Path to the config file>);
+ *  $app->run();
 **/
 namespace Ob_Ivan\DropboxProxy\Application;
 
@@ -40,11 +38,6 @@ class WebApplication
         // Create an app and pass config values into it.
         $app = $this->app = new WrappedApplication();
         $app['container'] = $container;
-
-        // Register providers.
-        // TODO: Take out provider list to a method that can be overriden in child classes.
-        $app->register(new SessionServiceProvider());
-        $app->register(new UrlGeneratorServiceProvider());
 
         // Routing and controllers //
 
