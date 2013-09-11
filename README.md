@@ -1,39 +1,54 @@
 DropboxProxy
 ============
 
-PHP proxy allowing downloading files from a single Dropbox account
-as if they were kept on the server.
+A web interface for browsing and downloading files from a Dropbox folder
+accompanied by a shell utility for uploading from and download to
+a local folder.
 
 Usage
 =====
-Consider the following folder structure:
+There are four directories to be taken into consideration:
 
-    ~/public_html       The one web server has access to.
-    ~/private_folder    Not visible from the web.
+    WEB         The one web server has access to.
+    STORAGE     A local directory to upload files from and download to.
+    CODE        A directory where this repo abides.
+    APP         Configuration folder.
 
-First of all you'll have to clone the repo to the private folder:
+It is strongly recommended that `CODE` and `APP` directories were kept off the
+web server access.
 
-    $ git clone git@github.com:ob-ivan/dropbox-proxy.git ~/private_folder
+First of all get the code (substitute `CODE` metavariable with appropriate path):
 
-Run composer to install dependencies:
+    $ git clone git@github.com:ob-ivan/dropbox-proxy.git CODE
 
+And run [composer](http://getcomposer.org/) to install dependencies:
+
+    $ cd CODE
     $ composer install
 
-Next create a front controller file (index.php) in the public folder
-like following:
+Next you'll have to create a config file and put it into `APP` directory.
+You can use `CODE/app` subdirectory for this, or create another one on your own.
+
+    $ echo '{}' > APP/config.json
+
+The config file is empty not, we'll elaborate on its contents later.
+
+Next create a front controller file (index.php) in the `WEB` directory like
+following (substitute directory placeholders with appropriate paths):
 
 ```php
 <?php
-$codeDir = <path/to/private_folder>;
-require_once $codeDir . '/bootstrap.php';
-$app = new Ob_Ivan\DropboxProxy\Application\WebApplication([
-    'debug'                     => false, // You can set this to true in development.
-    'docroot'                   => __DIR__,
-    'config.path'               => $codeDir . '/config.json',
-    'dropbox.auth_info.json'    => $codeDir . '/dropbox.json',
-]);
+require_once 'CODE/bootstrap.php';
+$app = new Ob_Ivan\DropboxProxy\Application\WebApplication('APP/config.json', [
+    'filesystem.storage' => STORAGE,
+]);,
 $app->run();
 ```
+
+The web interface is ready to run, but it will shows errors as your config file
+is empty.
+
+### TODO: Rewrite everything below.
 
 You'll need to create two files mentioned in the above code block.
 `dropbox.json` must contain the app key and secret which you
