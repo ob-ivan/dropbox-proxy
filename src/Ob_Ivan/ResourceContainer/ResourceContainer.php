@@ -33,7 +33,7 @@ class ResourceContainer implements ArrayAccess
         if (isset($this->factories[$name])) {
             return $this->factories[$name]($this);
         }
-        throw new Exception('Unknown resource "' . $name . '"');
+        throw new Exception('Trying to access unknown resource "' . $name . '"');
     }
 
     public function offsetSet($name, $value)
@@ -57,10 +57,63 @@ class ResourceContainer implements ArrayAccess
         }
     }
 
+    /**
+     * Register a resource factory.
+     *
+     * Upon access the factory is called at most once to produce a value
+     * which is then stored and returned each time the value is accessed.
+     * The factory will receive the container's instance as its only
+     * argument.
+     *
+     * Example usage:
+     *
+     *  $container->register('alice', function ($container) {
+     *      return isset($container['bob']);
+     *  });
+     *  $alice = $container['alice']; // false
+     *  $container['bob'] = 'bob';
+     *  $alice = $container['alice']; // still false as the value is already calculated.
+     *
+     * It is recommended that you divide your code into two stages:
+     * initialization and utilization. On initialization stage you assign
+     * values and register resource factories, allowing them to access
+     * container from inside a function, but you never retrieve values from
+     * the container. On utilization stage you assume all initialization is
+     * over, and you access values and resources to perform your tasks.
+     *
+     *  @param  string      $name
+     *  @param  mixed(self) $factory
+    **/
     public function register($name, callable $factory)
     {
         $this->factories[$name] = $this->share($factory);
         unset($this->values[$name]);
+    }
+
+    /**
+     * Extend a previously registered resource factory with an extender function.
+     *
+     * When called extender will receive two arguments:
+     *  - the previously registered resource factory.
+     *  - the container.
+     * It is up to extender whether to call the factory or not, and when, and how.
+     * Effectively extender is simply a resource factory with only difference
+     * that it receives the previous factory along with container instance.
+     *
+     *  @param  string                      $name
+     *  @param  mixed(self)(mixed(self))    $extender
+    **/
+    public function extend($name, callable $extender)
+    {
+        if (! isset($this->factories[$name])) {
+            throw new Exception('Trying to extend unknown resource "' . $name . '"');
+        }
+        $factory = $this->factories[$name];
+        $this->factories[$name] = $this->share(
+            function ($container) use ($extender, $factory) {
+                return $extender($factory, $container);
+            }
+        );
     }
 
     // private //
