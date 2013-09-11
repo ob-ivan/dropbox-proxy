@@ -3,6 +3,8 @@
  * An interface for a class that once passed to container's importProvider
  * method will enroll resources it provides in the container with poplate
  * method.
+ *
+ * The idea is based on Silex\ServiceProviderInterface by Fabien Potencier.
 **/
 namespace Ob_Ivan\ResourceContainer;
 

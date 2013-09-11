@@ -1,6 +1,10 @@
 <?php
 /**
  * A dependency injection container for lazy-evaluated shared resources.
+ *
+ * The idea is based on Pimple as Silex\Application (both by Fabien Potencier).
+ * I decided that all resources I need are always shared, and that
+ * simplified interface a lot.
 **/
 namespace Ob_Ivan\ResourceContainer;
 
