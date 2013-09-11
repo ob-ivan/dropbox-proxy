@@ -24,9 +24,11 @@ class ConsoleApplication
         // Locate config at $configPath and read it.
         // TODO: Eliminate code mirroring with WebApplication::__construct.
         $config = json_decode(file_get_contents($configPath), true);
+        $container = new ResourceContainer();
+        $container->importProvider(new DropboxResourceProvider());
+        $container->importValues($config);
 
-        // TODO: Inject config values into application.
-        // TODO: Inject DropboxServiceProvider into application.
+        // TODO: Inject container into UploadCommand.
         $this->app = new WrappedApplication();
         $this->app->add(new UploadCommand());
     }
