@@ -52,10 +52,19 @@ class ResourceContainer implements ArrayAccess
 
     public function __construct(array $values = [])
     {
+        $this->importValues($values);
+    }
+
+    // public : ResourceContainer : values //
+
+    public function importValues(array $values)
+    {
         foreach ($values as $name => $value) {
             $this[$name] = $value;
         }
     }
+
+    // public : ResourceContainer : factories //
 
     /**
      * Register a resource factory.
@@ -114,6 +123,14 @@ class ResourceContainer implements ArrayAccess
                 return $extender($factory, $container);
             }
         );
+    }
+
+    // public : ResourceContainer : providers //
+
+    public function importProvider(ResourceProviderInterface $provider, array $values = [])
+    {
+        $provider->populate($this);
+        $this->importValues($values);
     }
 
     // private //
