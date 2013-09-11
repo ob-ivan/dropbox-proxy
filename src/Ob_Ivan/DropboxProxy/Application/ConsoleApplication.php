@@ -10,6 +10,8 @@
 namespace Ob_Ivan\DropboxProxy\Application;
 
 use Ob_Ivan\DropboxProxy\Command\UploadCommand;
+use Ob_Ivan\DropboxProxy\ResourceProvider\DropboxResourceProvider;
+use Ob_Ivan\ResourceContainer\ResourceContainer;
 use Symfony\Component\Console\Application as WrappedApplication;
 
 class ConsoleApplication
