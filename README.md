@@ -31,13 +31,14 @@ You can use `CODE/app` subdirectory for this, or create another one on your own.
 
     $ echo '{}' > APP/config.json
 
-The config file is empty not, we'll elaborate on its contents later.
+The config file is empty now, we'll elaborate on its contents later.
 
-Next create a front controller file (index.php) in the `WEB` directory like
-following (substitute directory placeholders with appropriate paths):
+Next create `WEB/index.php` like following (substitute directory placeholders
+with appropriate paths):
 
 ```php
 <?php
+// WEB/index.php
 require_once 'CODE/bootstrap.php';
 $app = new Ob_Ivan\DropboxProxy\Application\WebApplication('APP/config.json', [
     'filesystem.storage' => STORAGE,
@@ -45,7 +46,20 @@ $app = new Ob_Ivan\DropboxProxy\Application\WebApplication('APP/config.json', [
 $app->run();
 ```
 
-The web interface is ready to run, but it will shows errors as your config file
+You'll also need a rewrite module so that requests like `/The_Batman.ISO` could
+be handled by your `index.php`. If you are running Apache web server, create
+`.htaccess` file like following:
+
+```
+# WEB/.htaccess
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule (.*) index.php [L]
+```
+
+**TODO:** Write instructions for `nginx.conf` location.
+
+The web interface is ready to run, but it will show errors as your config file
 is empty.
 
 ### TODO: Rewrite everything below.
