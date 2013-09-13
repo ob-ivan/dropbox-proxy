@@ -7,7 +7,10 @@
  *
  * Usage:
  *
- *  $app = new WebApplication(<Path to the config file>);
+ *  $app = new WebApplication(
+ *      <string  Path to config.json>,
+ *      [<string Path to local storage>]
+ *  );
  *  $app->run();
 **/
 namespace Ob_Ivan\DropboxProxy\Application;
@@ -23,7 +26,11 @@ class WebApplication
     **/
     private $app;
 
-    public function __construct($configPath)
+    /**
+     *  @param  string  $configPath             Path to config.json.
+     *  @param  string  $storagePath    null    Path to local storage.
+    **/
+    public function __construct($configPath, $storagePath = null)
     {
         // Locate config at $configPath and read it.
         // TODO: Elaborate on this, add substitutions interpolation etc.
@@ -32,6 +39,7 @@ class WebApplication
         $container = new ResourceContainer();
         $container->importProvider(new DropboxResourceProvider());
         $container->importValues($config);
+        $container['filesystem.storage'] = $storagePath;
 
         // Create an app and pass config values into it.
         $app = $this->app = new WrappedApplication();
