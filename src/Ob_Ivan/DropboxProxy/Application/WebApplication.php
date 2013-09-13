@@ -39,7 +39,9 @@ class WebApplication
         $container = new ResourceContainer();
         $container->importProvider(new DropboxResourceProvider());
         $container->importValues($config);
-        $container['filesystem.storage'] = $storagePath;
+        if ($storagePath) {
+            $container['filesystem.storage'] = $storagePath;
+        }
 
         // Create an app and pass config values into it.
         $app = $this->app = new WrappedApplication();
