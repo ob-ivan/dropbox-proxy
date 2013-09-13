@@ -6,6 +6,8 @@ namespace Ob_Ivan\DropboxProxy\Application;
 
 use Silex\Application as ParentApplication;
 use Silex\Application\UrlGeneratorTrait;
+use Silex\Provider\SessionServiceProvider;
+use Silex\Provider\UrlGeneratorServiceProvider;
 
 class RichApplication extends ParentApplication
 {
@@ -16,7 +18,7 @@ class RichApplication extends ParentApplication
         parent::__construct($values);
 
         foreach ($this->getDefaultServiceProviders() as $serviceProvider) {
-            $app->register($serviceProvider);
+            $this->register($serviceProvider);
         }
     }
 

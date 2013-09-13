@@ -15,8 +15,6 @@ namespace Ob_Ivan\DropboxProxy\Application;
 use Ob_Ivan\DropboxProxy\Application\RichApplication as WrappedApplication;
 use Ob_Ivan\DropboxProxy\ResourceProvider\DropboxResourceProvider;
 use Ob_Ivan\ResourceContainer\ResourceContainer;
-use Silex\Provider\SessionServiceProvider;
-use Silex\Provider\UrlGeneratorServiceProvider;
 
 class WebApplication
 {
