@@ -16,8 +16,7 @@
 namespace Ob_Ivan\DropboxProxy\Application;
 
 use Ob_Ivan\DropboxProxy\Application\RichApplication as WrappedApplication;
-use Ob_Ivan\DropboxProxy\ResourceProvider\DropboxResourceProvider;
-use Ob_Ivan\ResourceContainer\ResourceContainer;
+use Ob_Ivan\DropboxProxy\ResourceContainerFactory;
 
 class WebApplication
 {
@@ -32,20 +31,9 @@ class WebApplication
     **/
     public function __construct($configPath, $storagePath = null)
     {
-        // Locate config at $configPath and read it.
-        // TODO: Elaborate on this, add substitutions interpolation etc.
-        // TODO: Eliminate code mirroring with ConsoleApplication::__construct.
-        $config = json_decode(file_get_contents($configPath), true);
-        $container = new ResourceContainer();
-        $container->importProvider(new DropboxResourceProvider());
-        $container->importValues($config);
-        if ($storagePath) {
-            $container['filesystem.storage'] = $storagePath;
-        }
-
-        // Create an app and pass config values into it.
+        // Create an app and pass resource container into it.
         $app = $this->app = new WrappedApplication();
-        $app['container'] = $container;
+        $app['container'] = ResourceContainerFactory::getResourceContainer($configPath, $storagePath);
 
         // Routing and controllers //
 
@@ -62,7 +50,6 @@ class WebApplication
         // Download a file from filesystem storage.
         $app->get('/{file}', function ($file) use ($app) {
             $filename = implode(DIRECTORY_SEPARATOR, [
-                $app['docroot'],
                 $app['container']['filesystem.storage'],
                 $file,
             ]);

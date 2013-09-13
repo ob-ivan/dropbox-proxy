@@ -3,15 +3,16 @@
  * An application handling command line invocations.
  *
  * Available commands:
- *  upload FILE
- *  upload DIRECTORY
- *  upload              # reads config
+ *  upload [FILE]
+ *      If FILE is a relative path to a file within local storage,
+ *      upload it into dropbox folder under the same name.
+ *      If FILE is omitted, uploads each file within local storage.
+ *      Directories are ignored and not walked recursively.
 **/
 namespace Ob_Ivan\DropboxProxy\Application;
 
 use Ob_Ivan\DropboxProxy\Command\UploadCommand;
-use Ob_Ivan\DropboxProxy\ResourceProvider\DropboxResourceProvider;
-use Ob_Ivan\ResourceContainer\ResourceContainer;
+use Ob_Ivan\DropboxProxy\ResourceContainerFactory;
 use Symfony\Component\Console\Application as WrappedApplication;
 
 class ConsoleApplication
@@ -27,17 +28,9 @@ class ConsoleApplication
     **/
     public function __construct($configPath, $storagePath = null)
     {
-        // Locate config at $configPath and read it.
-        // TODO: Eliminate code mirroring with WebApplication::__construct.
-        $config = json_decode(file_get_contents($configPath), true);
-        $container = new ResourceContainer();
-        $container->importProvider(new DropboxResourceProvider());
-        $container->importValues($config);
-        if ($storagePath) {
-            $container['filesystem.storage'] = $storagePath;
-        }
+        $container = ResourceContainerFactory::getResourceContainer($configPath, $storagePath);
 
-        // TODO: Inject container into UploadCommand.
+        // TODO: Inject $container into UploadCommand.
         $this->app = new WrappedApplication();
         $this->app->add(new UploadCommand());
     }
