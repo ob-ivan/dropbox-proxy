@@ -9,6 +9,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UploadCommand extends Command
 {
+    private $toolbox;
+
+    public function setToolbox(ResourceContainer $toolbox)
+    {
+        $this->toolbox = $toolbox;
+    }
+
+    // protected : Command //
+
     protected function configure()
     {
         $this
@@ -17,26 +26,48 @@ class UploadCommand extends Command
             ->addArgument(
                 'file',
                 InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
-                'Path to a file or a directory to upload'
+                'Paths to files to upload, relative to local storage root'
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO: Read [config][root] if <file> argument is empty.
-
-        foreach ($input->getArgument('file') as $path) {
+        $pathList = $input->getArgument('file');
+        // TODO: if pathList is empty, list the whole storage directory.
+        $successCount = 0;
+        $skippedCount = 0;
+        foreach ($pathList as $relativePath) {
+            $path = implode(DIRECTORY_SEPARATOR, [
+                $this->getToolbox()['filesystem.storage'],
+                $relativePath
+            ]);
             if (! is_readable($path)) {
                 $output->writeln('Cannot read path "' . $path . '", skipping.');
+                ++$skippedCount;
                 continue;
             }
             if (is_dir($path)) {
-                // TODO
-            } elseif (is_file($path)) {
-                // TODO
-            } else {
-                $output->writeln('Path "' . $path . '" is neither a file, nor a directory.');
+                $output->writeln('Path "' . $path . '" is a directory, skipping.');
+                ++$skippedCount;
+                continue;
             }
+            if (! is_file($path)) {
+                $output->writeln('Path "' . $path . '" is not a file, skipping.');
+                ++$skippedCount;
+                continue;
+            }
+            // TODO: Handle usual files.
         }
+        // TODO: Output success and skipped counts.
+    }
+
+    // protected : UploadCommand //
+
+    protected function getToolbox()
+    {
+        if (! $this->toolbox) {
+            throw new Exception('Toolbox is not defined. Call setToolbox.');
+        }
+        return $this->toolbox;
     }
 }

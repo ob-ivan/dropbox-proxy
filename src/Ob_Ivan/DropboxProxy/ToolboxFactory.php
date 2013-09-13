@@ -4,10 +4,16 @@ namespace Ob_Ivan\DropboxProxy;
 use Ob_Ivan\DropboxProxy\ResourceProvider\DropboxResourceProvider;
 use Ob_Ivan\ResourceContainer\ResourceContainer;
 
-class ResourceContainerFactory
+class ToolboxFactory
 {
-    // TODO: Replace $storagePath argument with a substitution array.
-    public static function getResourceContainer($configPath, $storagePath = null)
+    /**
+     * TODO: Replace $storagePath argument with a substitution array.
+     *
+     *  @param  string  $configPath
+     *  @param  string  $storagePath    null
+     *  @return ResourceContainer
+    **/
+    public static function getToolbox($configPath, $storagePath = null)
     {
         $config = json_decode(file_get_contents($configPath), true);
         $container = new ResourceContainer();

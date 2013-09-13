@@ -3,8 +3,8 @@
  * An application handling command line invocations.
  *
  * Available commands:
- *  upload [FILE]
- *      If FILE is a relative path to a file within local storage,
+ *  upload [FILES...]
+ *      For each FILE if it is a relative path to a file within local storage,
  *      upload it into dropbox folder under the same name.
  *      If FILE is omitted, uploads each file within local storage.
  *      Directories are ignored and not walked recursively.
@@ -12,7 +12,7 @@
 namespace Ob_Ivan\DropboxProxy\Application;
 
 use Ob_Ivan\DropboxProxy\Command\UploadCommand;
-use Ob_Ivan\DropboxProxy\ResourceContainerFactory;
+use Ob_Ivan\DropboxProxy\ToolboxFactory;
 use Symfony\Component\Console\Application as WrappedApplication;
 
 class ConsoleApplication
@@ -28,11 +28,12 @@ class ConsoleApplication
     **/
     public function __construct($configPath, $storagePath = null)
     {
-        $container = ResourceContainerFactory::getResourceContainer($configPath, $storagePath);
+        $toolbox = ToolboxFactory::getToolbox($configPath, $storagePath);
 
-        // TODO: Inject $container into UploadCommand.
         $this->app = new WrappedApplication();
-        $this->app->add(new UploadCommand());
+        $command = new UploadCommand();
+        $command->setToolbox($toolbox);
+        $this->app->add($command);
     }
 
     public function run()

@@ -16,7 +16,7 @@
 namespace Ob_Ivan\DropboxProxy\Application;
 
 use Ob_Ivan\DropboxProxy\Application\RichApplication as WrappedApplication;
-use Ob_Ivan\DropboxProxy\ResourceContainerFactory;
+use Ob_Ivan\DropboxProxy\ToolboxFactory;
 
 class WebApplication
 {
@@ -31,26 +31,26 @@ class WebApplication
     **/
     public function __construct($configPath, $storagePath = null)
     {
-        // Create an app and pass resource container into it.
+        // Create an app and pass resource toolbox into it.
         $app = $this->app = new WrappedApplication();
-        $app['container'] = ResourceContainerFactory::getResourceContainer($configPath, $storagePath);
+        $app['toolbox'] = ToolboxFactory::getToolbox($configPath, $storagePath);
 
         // Routing and controllers //
 
         // Obtain access token with a two-step authorization.
         $app->get('/dropbox-auth-start', function () use ($app) {
             // Redirect to Dropbox page and generate an authorization code.
-            return $app->redirect($app['container']['dropbox.web_auth']->start());
+            return $app->redirect($app['toolbox']['dropbox.web_auth']->start());
         })->bind('dropbox-auth-start');
 
         $app->get('/dropbox-auth-finish', function () use ($app) {
-            return $app['container']['dropbox.access_token'];
+            return $app['toolbox']['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
         // Download a file from filesystem storage.
         $app->get('/{file}', function ($file) use ($app) {
             $filename = implode(DIRECTORY_SEPARATOR, [
-                $app['container']['filesystem.storage'],
+                $app['toolbox']['filesystem.storage'],
                 $file,
             ]);
             if (! file_exists($filename)) {
@@ -65,8 +65,8 @@ class WebApplication
         // List available files.
         $app->get('/', function () use ($app) {
 
-            $folderMetadata = $app['container']['dropbox.client']
-                ->getMetadataWithChildren($app['container']['dropbox.root']);
+            $folderMetadata = $app['toolbox']['dropbox.client']
+                ->getMetadataWithChildren($app['toolbox']['dropbox.root']);
             $contents = $folderMetadata['contents'];
             return '<pre>' . print_r($contents, true) . '</pre>'; // debug
 
