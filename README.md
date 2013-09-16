@@ -1,82 +1,126 @@
 DropboxProxy
 ============
 
-PHP proxy allowing downloading files from a single Dropbox account
-as if they were kept on the server.
+A web interface for browsing and downloading files from a Dropbox folder
+accompanied by a shell utility for uploading from and download to
+a local folder.
 
-Usage
-=====
-Consider the following folder structure:
+Installation
+============
 
-    ~/public_html       The one web server has access to.
-    ~/private_folder    Not visible from the web.
+This package provides functionality for both a web proxy and a shell utility.
+You may choose to install any of them, or both. In any case some initial setup
+is required.
 
-First of all you'll have to clone the repo to the private folder:
+Inital setup
+------------
+Get the code (substitute `REPOSITORY` and `CODE_DIR` as apropriate):
 
-    $ git clone git@github.com:ob-ivan/dropbox-proxy.git ~/private_folder
+    $ git clone REPOSITORY CODE_DIR
 
-Run composer to install dependencies:
+And run [composer](http://getcomposer.org/) to install dependencies:
 
+    $ cd CODE_DIR
     $ composer install
 
-Next create a front controller file (index.php) in the public folder
-like following:
+Create a configuration file (usually `config.json` but you are free to name it
+any way you like) using `app/config.example.json` for reference.
+There is `app/` directory to put your application files such as configuration
+there. You can choose not to use it and create configuration file anywhere you
+prefer. Just remember that config holds confidential data, and thus it should
+not be made public.
+
+Installing web proxy
+--------------------
+In your web folder create two files, `index.php` and `.htaccess`.
 
 ```php
 <?php
-$codeDir = <path/to/private_folder>;
-require_once $codeDir . '/bootstrap.php';
-$app = new Ob_Ivan\DropboxProxy\Application\WebApplication([
-    'debug'                     => false, // You can set this to true in development.
-    'docroot'                   => __DIR__,
-    'config.path'               => $codeDir . '/config.json',
-    'dropbox.auth_info.json'    => $codeDir . '/dropbox.json',
-]);
+// index.php
+require_once 'CODE_DIR/bootstrap.php';
+$app = new Ob_Ivan\DropboxProxy\Application\WebApplication(
+    'APP_DIR/config.json',  // Put the path to your config file here.
+    STORAGE_DIR
+);
 $app->run();
 ```
 
-You'll need to create two files mentioned in the above code block.
-`dropbox.json` must contain the app key and secret which you
-can receive on the Dropbox site when you register an app.
-Go to https://www.dropbox.com/developers/apps if you don't have one.
+```
+# .htaccess
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule (.*) index.php [L]
+```
 
-You will also need the `config.json` file. It may contain an empty
-object at first, and that's enough for your proxy to run.
-But as it knows nothing about your account or your dropbox folder,
-you'll have to generate an access token and put it into `config.json`.
+**TODO:** Write a location for `nginx.conf`.
+
+Installing console utility
+--------------------------
+In your app folder (or actually anywhere you prefer) create an executable
+script file:
+
+```php
+#!/usr/local/bin/php
+<?php
+// console.php
+require_once 'CODE_DIR/bootstrap.php';
+$app = new Ob_Ivan\DropboxProxy\Application\ConsoleApplication(
+    'APP_DIR/config.json', // Put the path to your config file here.
+    STORAGE_DIR
+);
+$app->run();
+```
+
+The resemblance of this file to `index.php` is intentional.
+
+In the first line (the so-called shebang line) put the path to your local
+php interpreter. You can find it using `which` utility:
+
+    $ which php
+    /usr/local/bin/php
+
+If you change its mode to executable:
+
+    $ chmod u+x app/console.php
+
+Then you will be able to call it directly:
+
+    $ app/console.php
+
+Obtaining access token
+----------------------
+Any actual requests to Dropbox API are out of question unless you get an access
+token and put it to your config file.
+
+_(Instructions below assume you installed web proxy.)_
 
 To do that make sure you are logged into Dropbox in your browser and
 go to `http://<your.domain>/dropbox-auth-start`. It will show you
 a Dropbox page asking whether you are willing to grant your app an
 access to your folder. Click accept and you will see an **authorization
 code** in your browser. It looks like a lengthy string of alphanumeric
-characters. Put it into `config.json` like follows:
+characters. Add it to `config.json` like follows:
 
 ```json
 {
-    "authCode" : "<AUTHORIZATION_CODE_GOES_HERE>"
+    "dropbox.auth_code" : "<AUTHORIZATION_CODE_GOES_HERE>"
 }
 ```
 
 Then when you visit `http://<your.domain>/dropbox-auth-finish` it will
 show you the **access token**, which looks pretty much like the authorization
-token but is of different nature. Place it into `config.json` instead of
+code but is of different nature. Place it into `config.json` instead of
 authorization code:
 
 ```json
 {
-    "accessToken" : "<ACCESS_TOKEN_GOES_HERE>"
+    "dropbox.access_token" : "<ACCESS_TOKEN_GOES_HERE>"
 }
 ```
 
 We remove authorization code because it can be used only once to obtain
 the access token. This also means that if you don't store the access token
 you'll have to start over from `http://<your.domain>/dropbox-auth-start`.
-
-Now you can see the reason why we put `config.json` and `dropbox.json`
-to the private folder. This is because both of them contain sensitive data
-which should be kept safe even if web server fails to deny access to
-distinct files in the public folder.
 
 MIT License
 ===========
