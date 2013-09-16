@@ -1,0 +1,56 @@
+/**
+ * Use this file as an example to create your own config.json.
+ *
+ * You cannot use this file directly as it contains comments which are not
+ * part of valid JSON. Also it is versioned and you probably do not want
+ * to see it as modified each time you type `git status`.
+ *
+ * Replace words in upper case with appropriate values.
+**/
+{
+    /**
+     * Your application credentials. If you don't know what it is, go to
+     * https://www.dropbox.com/developers/apps and create an application,
+     * then insert values here.
+     *
+     * Required.
+    **/
+    "dropbox.app_info.json"     : {
+        "key"       : "APP_KEY",
+        "secret"    : "APP_SECRET"
+    },
+
+    /**
+     * Your application self-proclaimed name and version.
+     * Dropbox Client object uses it to construct User-Agent string.
+     *
+     * Required.
+    **/
+    "dropbox.client_identifier" : "APP_NAME/APP_VERSION",
+
+    /**
+     * Authorization code is a string identifier which Dropbox site provides
+     * you the moment you grant your app unlimited access to your folder by
+     * clicking 'Accept' button on their site.
+     *
+     * Ideally you should use it just once, to obtain access token.
+     * Once you have access token stored in config file, auth_code is never
+     * used again.
+     *
+     * Actually it won't work again, as Dropbox purges it as soon as it
+     * returns access token.
+     *
+     * Required only as a part of setup.
+    **/
+    "dropbox.auth_code"         : "AUTH_CODE",
+
+    /**
+     * Access token is a string identifying a dropbox user (usually you)
+     * who gave permission to your app to access their dropbox folder.
+     *
+     * Optional for your initial setup, but required to make actual work.
+    **/
+    "dropbox.access_token"      : "ACCESS_TOKEN",
+
+
+}
