@@ -39,10 +39,8 @@ In your web folder create two files, `index.php` and `.htaccess`.
 // index.php
 require_once 'CODE_DIR/bootstrap.php';
 $app = new Ob_Ivan\DropboxProxy\Application\WebApplication(
-    'APP_DIR/config.json', // Put the path to your config file here.
-    [
-        'filesystem.storage' => STORAGE_DIR,
-    ]
+    'APP_DIR/config.json',  // Put the path to your config file here.
+    STORAGE_DIR
 );
 $app->run();
 ```
@@ -68,9 +66,7 @@ script file:
 require_once 'CODE_DIR/bootstrap.php';
 $app = new Ob_Ivan\DropboxProxy\Application\ConsoleApplication(
     'APP_DIR/config.json', // Put the path to your config file here.
-    [
-        'filesystem.storage' => STORAGE_DIR,
-    ]
+    STORAGE_DIR
 );
 $app->run();
 ```
