@@ -1,0 +1,12 @@
+
+# You can put your app's files (config.json, console.php, storage dir, etc)
+# in this directory. However I won't blame you if you choose not to.
+
+# Any files inside this directory are ignored by git.
+*
+
+# Except for this .gitignore file which should stay...
+!.gitignore
+
+# ...and example config file.
+!config.example.json

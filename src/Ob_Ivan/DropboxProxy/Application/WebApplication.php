@@ -2,58 +2,81 @@
 /**
  * An application handling web requests.
  *
- * Basic routes and controllers are defined here, but some parameters are
+ * Basic routes and controllers are defined here, but config file is
  * required for this to work.
  *
  * Usage:
  *
- *  $app = new WebApplication([
- *      'config.path'               => <Path to the config file. See ConfigServiceProvider for details>,
- *      'dropbox.auth_info.json'    => <Path to json file with your app's credentials>,
- *  ]);
+ *  $app = new WebApplication(
+ *      <string  Path to config.json>,
+ *      [<string Path to local storage>]
+ *  );
+ *  $app->run();
 **/
 namespace Ob_Ivan\DropboxProxy\Application;
 
-class WebApplication extends Application
+use Ob_Ivan\DropboxProxy\Application\RichApplication as WrappedApplication;
+use Ob_Ivan\DropboxProxy\ToolboxFactory;
+
+class WebApplication
 {
-    public function __construct(array $values = [])
+    /**
+     * @var WrappedApplication
+    **/
+    private $app;
+
+    /**
+     *  @param  string  $configPath             Path to config.json.
+     *  @param  string  $storagePath    null    Path to local storage.
+    **/
+    public function __construct($configPath, $storagePath = null)
     {
-        parent::__construct($values);
+        // Create an app and pass resource toolbox into it.
+        $app = $this->app = new WrappedApplication();
+        $app['toolbox'] = ToolboxFactory::getToolbox($configPath, $storagePath);
 
         // Routing and controllers //
 
         // Obtain access token with a two-step authorization.
-        $this->get('/dropbox-auth-start', function () {
+        $app->get('/dropbox-auth-start', function () use ($app) {
             // Redirect to Dropbox page and generate an authorization code.
-            return $this->redirect($this['dropbox.web_auth']->start());
+            return $app->redirect($app['toolbox']['dropbox.web_auth']->start());
         })->bind('dropbox-auth-start');
 
-        $this->get('/dropbox-auth-finish', function () {
-            return $this['dropbox.access_token'];
+        $app->get('/dropbox-auth-finish', function () use ($app) {
+            return $app['toolbox']['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
-        // Download a file.
-        $this->get('/{file}', function ($file) {
-            // Download a file.
-            $filename = implode(DIRECTORY_SEPARATOR, [$this['docroot'], $this['config']['storage'], $file]);
+        // Download a file from filesystem storage.
+        $app->get('/{file}', function ($file) use ($app) {
+            $filename = implode(DIRECTORY_SEPARATOR, [
+                $app['toolbox']['filesystem.storage'],
+                $file,
+            ]);
             if (! file_exists($filename)) {
                 return
                     'File "' . $file . '" was not found on server. ' .
                     'Check for typos or contact system administrator.'
                 ;
             }
-            return $this->sendFile($filename);
+            return $app->sendFile($filename);
         });
 
         // List available files.
-        $this->get('/', function () {
+        $app->get('/', function () use ($app) {
 
-            $folderMetadata = $this['dropbox.client']->getMetadataWithChildren($this['config']['root']);
+            $folderMetadata = $app['toolbox']['dropbox.client']
+                ->getMetadataWithChildren($app['toolbox']['dropbox.root']);
             $contents = $folderMetadata['contents'];
             return '<pre>' . print_r($contents, true) . '</pre>'; // debug
 
             // TODO: folder listing
             return 'Folder listing is not yet supported. Please come back later.';
         });
+    }
+
+    public function run()
+    {
+        $this->app->run();
     }
 }

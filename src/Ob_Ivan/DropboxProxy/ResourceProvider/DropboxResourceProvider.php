@@ -1,7 +1,7 @@
 <?php
 /**
- * Provider for a set of services under [dropbox.] namespace
- * in a Silex application.
+ * Provider for a set of resources under [dropbox.] namespace
+ * in a resource container.
  *
  * Parameters:
  *  - [dropbox.auth_code]
@@ -10,7 +10,7 @@
  *      and store [dropbox.access_token] value.
  *
  *  - [dropbox.app_info.json]
- *      Absolute path to a json file with your app credentials (key and secret).
+ *      A PHP array with your app's credentials (key and secret).
  *      Used by [dropbox.app_info] service only. May be omitted if you already
  *      have [dropbox.access_token] value stored.
  *
@@ -27,9 +27,9 @@
  *      to obtain the access token value. Note that in app case it is your
  *      responsibility to store the access token value, or else the auth code
  *      value will be wasted.
- *      Once you have stored access token value you can substitute app service
+ *      Once you have stored access token value you can substitute container resource
  *      with its value in your application:
- *          $app['dropbox.access_token'] = file_get_contents('access_token.txt');
+ *          $container['dropbox.access_token'] = file_get_contents('access_token.txt');
  *
  *  - [dropbox.app_info]
  *      An instance of Dropbox\AppInfo class which look ups [dropbox.app_info.json]
@@ -71,21 +71,47 @@
  *  Please refer to Dropbox\Client full documentation on what overwhelming
  *  possibilities it brings into your hands.
 **/
-namespace Ob_Ivan\DropboxProxy\Provider;
+namespace Ob_Ivan\DropboxProxy\ResourceProvider;
 
 use Dropbox;
-use Silex\Application;
-use Silex\ServiceProviderInterface;
+use Ob_Ivan\ResourceContainer\ResourceContainer;
+use Ob_Ivan\ResourceContainer\ResourceProviderInterface;
 
-class DropboxServiceProvider implements ServiceProviderInterface
+class DropboxResourceProvider implements ResourceProviderInterface
 {
-    function register(Application $app)
+    function populate(ResourceContainer $container)
     {
-        $app['dropbox.access_token'] = $app->share(function () use ($app) {
+        // level 0 //
+
+        /**
+         * Expected parameters:
+         *  - [dropbox.app_info.json]
+         *  - [dropbox.auth_code]
+         *  - [dropbox.client_identifier]
+        **/
+
+        // level 1 //
+
+        $container->register('dropbox.app_info', function ($container) {
+            return Dropbox\AppInfo::loadFromJson($container['dropbox.app_info.json']);
+        });
+
+        // level 2 //
+
+        $container->register('dropbox.web_auth', function ($container) {
+            return new Dropbox\WebAuthNoRedirect(
+                $container['dropbox.app_info'],
+                $container['dropbox.client_identifier']
+            );
+        });
+
+        // level 3 //
+
+        $container->register('dropbox.access_token', function ($container) {
             try {
                 // Authorization code can be used only once to obtain accessToken.
                 list($accessToken, $userId) =
-                    $app['dropbox.web_auth']->finish($app['dropbox.auth_code']);
+                    $container['dropbox.web_auth']->finish($container['dropbox.auth_code']);
             }
             catch (Dropbox\Exception $e) {
                 throw new Exception(
@@ -96,24 +122,14 @@ class DropboxServiceProvider implements ServiceProviderInterface
             }
             return $accessToken;
         });
-        $app['dropbox.app_info'] = $app->share(function () use ($app) {
-            return Dropbox\AppInfo::loadFromJsonFile($app['dropbox.app_info.json']);
-        });
-        $app['dropbox.client'] = $app->share(function () use ($app) {
-            return new Dropbox\Client(
-                $app['dropbox.access_token'],
-                $app['dropbox.client_identifier']
-            );
-        });
-        $app['dropbox.web_auth'] = $app->share(function () use ($app) {
-            return new Dropbox\WebAuthNoRedirect(
-                $app['dropbox.app_info'],
-                $app['dropbox.client_identifier']
-            );
-        });
-    }
 
-    function boot(Application $app)
-    {
+        // level 4 //
+
+        $container->register('dropbox.client', function ($container) {
+            return new Dropbox\Client(
+                $container['dropbox.access_token'],
+                $container['dropbox.client_identifier']
+            );
+        });
     }
 }
