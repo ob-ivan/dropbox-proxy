@@ -39,8 +39,7 @@ In your web folder create two files, `index.php` and `.htaccess`.
 // index.php
 require_once 'CODE_DIR/bootstrap.php';
 $app = new Ob_Ivan\DropboxProxy\Application\WebApplication(
-    // Put the path to your config file here.
-    'APP_DIR/config.json',
+    'APP_DIR/config.json', // Put the path to your config file here.
     [
         'filesystem.storage' => STORAGE_DIR,
     ]
@@ -59,7 +58,30 @@ RewriteRule (.*) index.php [L]
 
 Installing console utility
 --------------------------
-**TODO:** Write it.
+In your app folder (or actually anywhere you prefer) create an executable
+script file:
+
+```php
+#!/usr/local/bin/php
+<?php
+// console.php
+require_once 'CODE_DIR/bootstrap.php';
+$app = new Ob_Ivan\DropboxProxy\Application\ConsoleApplication(
+    'APP_DIR/config.json', // Put the path to your config file here.
+    [
+        'filesystem.storage' => STORAGE_DIR,
+    ]
+);,
+$app->run();
+```
+
+The resemblance of this file to `index.php` is intentional.
+
+In the first line (the so-called shebang line) put the path to your local
+php interpreter. You can find it using `which` utility:
+
+    $ which php
+    /usr/local/bin/php
 
 Obtaining access token
 ----------------------
