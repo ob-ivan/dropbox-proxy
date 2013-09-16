@@ -43,7 +43,7 @@ $app = new Ob_Ivan\DropboxProxy\Application\WebApplication(
     [
         'filesystem.storage' => STORAGE_DIR,
     ]
-);,
+);
 $app->run();
 ```
 
@@ -71,7 +71,7 @@ $app = new Ob_Ivan\DropboxProxy\Application\ConsoleApplication(
     [
         'filesystem.storage' => STORAGE_DIR,
     ]
-);,
+);
 $app->run();
 ```
 
@@ -82,6 +82,14 @@ php interpreter. You can find it using `which` utility:
 
     $ which php
     /usr/local/bin/php
+
+If you change its mode to executable:
+
+    $ chmod u+x app/console.php
+
+Then you will be able to call it directly:
+
+    $ app/console.php
 
 Obtaining access token
 ----------------------
