@@ -1,6 +1,7 @@
 <?php
 namespace Ob_Ivan\DropboxProxy\Command;
 
+use Dropbox\WriteMode;
 use Ob_Ivan\ResourceContainer\ResourceContainer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -23,11 +24,11 @@ class UploadCommand extends Command
     {
         $this
             ->setName('upload')
-            ->setDescription('Uploads a file or a whole directory to Dropbox folder specified by config')
+            ->setDescription('Uploads a file or a whole directory to Dropbox folder specified by config.')
             ->addArgument(
                 'file',
                 InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
-                'Paths to files to upload, relative to local storage root'
+                'Paths to files to upload, relative to local storage root.'
             );
     }
 
@@ -35,31 +36,53 @@ class UploadCommand extends Command
     {
         $pathList = $input->getArgument('file');
         // TODO: if pathList is empty, list the whole storage directory.
-        $successCount = 0;
-        $skippedCount = 0;
+        $successCount   = 0;
+        $skippedCount   = 0;
+        $errorCount     = 0;
+        $toolbox = $this->getToolbox();
+        $root    = $toolbox['dropbox.root'];
+        $client  = $toolbox['dropbox.client'];
         foreach ($pathList as $relativePath) {
-            $path = implode(DIRECTORY_SEPARATOR, [
-                $this->getToolbox()['filesystem.storage'],
+            $localPath = implode(DIRECTORY_SEPARATOR, [
+                $toolbox['filesystem.storage'],
                 $relativePath
             ]);
-            if (! is_readable($path)) {
-                $output->writeln('Cannot read path "' . $path . '", skipping.');
+            if (! is_readable($localPath)) {
+                $output->writeln('Cannot read path "' . $localPath . '", skipping.');
                 ++$skippedCount;
                 continue;
             }
-            if (is_dir($path)) {
-                $output->writeln('Path "' . $path . '" is a directory, skipping.');
+            if (is_dir($localPath)) {
+                $output->writeln('Path "' . $localPath . '" is a directory, skipping.');
                 ++$skippedCount;
                 continue;
             }
-            if (! is_file($path)) {
-                $output->writeln('Path "' . $path . '" is not a file, skipping.');
+            if (! is_file($localPath)) {
+                $output->writeln('Path "' . $localPath . '" is not a file, skipping.');
                 ++$skippedCount;
                 continue;
             }
-            // TODO: Handle usual files.
+
+            // Handle usual files.
+            $remotePath = implode('/', [$root, $relativePath]);
+            $output->writeln('Uploading ' . $localPath . ' to ' . $remotePath);
+            $file = fopen($localPath, 'rb');
+            $result = $client->uploadFile($remotePath, WriteMode::add(), $file);
+            fclose($file);
+            if (is_array($result) && isset($result['path']) && $result['path'] === $remotePath) {
+                $output->writeln('Successfully uploaded ' . $localPath . ' to ' . $remotePath);
+                ++$successCount;
+            } else {
+                $output->writeln('Unexpected result while uploading ' . $localPath . ' to ' . $remotePath);
+                ++$errorCount;
+            }
         }
-        // TODO: Output success and skipped counts.
+        // Output overall report.
+        $output->writeln('-- ');
+        $output->writeln('Total ' . count($pathList) . ' found.');
+        $output->writeln($successCount . ' file(s) uploaded successfully.');
+        $output->writeln($skippedCount . ' file(s) skipped.');
+        $output->writeln($errorCount . ' error(s) occured.');
     }
 
     // protected : UploadCommand //
