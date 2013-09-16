@@ -79,7 +79,7 @@ class UploadCommand extends Command
         }
         // Output overall report.
         $output->writeln('-- ');
-        $output->writeln('Total ' . count($pathList) . ' found.');
+        $output->writeln('Total ' . count($pathList) . ' file(s).');
         $output->writeln($successCount . ' file(s) uploaded successfully.');
         $output->writeln($skippedCount . ' file(s) skipped.');
         $output->writeln($errorCount . ' error(s) occured.');
