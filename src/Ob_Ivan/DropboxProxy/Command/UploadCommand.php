@@ -35,7 +35,20 @@ class UploadCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $pathList = $input->getArgument('file');
-        // TODO: if pathList is empty, list the whole storage directory.
+
+        // If pathList is empty, list the whole storage directory.
+        if (empty($pathList)) {
+            $dir = dir($this->getStoragePath());
+            while (false !== ($entry = $dir->read())) {
+                // Special files whose name starts with a full stop (.) are ignored.
+                if (preg_match('~^\.~', $entry)) {
+                    continue;
+                }
+                $pathList[] = $entry;
+            }
+            $dir->close();
+        }
+
         $successCount   = 0;
         $skippedCount   = 0;
         $errorCount     = 0;
@@ -43,8 +56,12 @@ class UploadCommand extends Command
         $root    = $toolbox['dropbox.root'];
         $client  = $toolbox['dropbox.client'];
         foreach ($pathList as $relativePath) {
+
+            // TODO: Check dropbox folder to see if the same file is already
+            // present there.
+
             $localPath = implode(DIRECTORY_SEPARATOR, [
-                $toolbox['filesystem.storage'],
+                $this->getStoragePath(),
                 $relativePath
             ]);
             if (! is_readable($localPath)) {
@@ -86,6 +103,11 @@ class UploadCommand extends Command
     }
 
     // protected : UploadCommand //
+
+    protected function getStoragePath()
+    {
+        return $this->getToolbox()['filesystem.storage'];
+    }
 
     protected function getToolbox()
     {
