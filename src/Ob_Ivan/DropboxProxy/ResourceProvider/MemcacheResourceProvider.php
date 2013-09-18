@@ -30,10 +30,14 @@ class MemcacheResourceProvider implements ResourceProviderInterface
             } elseif (isset($container['memcache.host']) && isset($container['memcache.port'])) {
                 $params['host'] = $container['memcache.host'];
                 $params['port'] = $container['memcache.port'];
+            } else {
+                throw new Exception('No server parameters provided for memcache resource.');
             }
             return new CacheCollection(
                 new MemcacheDriver($params),
-                $container['memcache.namespace']
+                isset($container['memcache.namespace'])
+                    ? $container['memcache.namespace']
+                    : ''
             );
         });
     }
