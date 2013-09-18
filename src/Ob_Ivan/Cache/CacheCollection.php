@@ -45,7 +45,7 @@ class CacheCollection
         return $this->elements[$key][$duration];
     }
 
-    // protected
+    // protected //
 
     public function getKey($key)
     {

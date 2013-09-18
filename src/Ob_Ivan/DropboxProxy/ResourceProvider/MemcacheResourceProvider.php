@@ -9,7 +9,7 @@
  *  - [memcache.namespace]
  *
  * Services:
- *  - [memcache]
+ *  - [memcache] instance of CacheCollection
 **/
 namespace Ob_Ivan\DropboxProxy\ResourceProvider;
 
