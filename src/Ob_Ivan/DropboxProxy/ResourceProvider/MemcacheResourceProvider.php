@@ -13,7 +13,8 @@
 **/
 namespace Ob_Ivan\DropboxProxy\ResourceProvider;
 
-use Memcache;
+use Ob_Ivan\Cache\Driver\MemcacheDriver;
+use Ob_Ivan\Cache\CacheCollection;
 use Ob_Ivan\ResourceContainer\ResourceContainer;
 use Ob_Ivan\ResourceContainer\ResourceProviderInterface;
 
@@ -22,19 +23,18 @@ class MemcacheResourceProvider implements ResourceProviderInterface
     function populate(ResourceContainer $container)
     {
         $container->register('memcache', function ($container) {
-            $memcache = new Memcache();
+            $params = [];
             if (isset($container['memcache.unix_socket'])) {
-                $memcache->addServer(
-                    'unix://' . $container['memcache.unix_socket'],
-                    0
-                );
+                $params['host'] = 'unix://' . $container['memcache.unix_socket'];
+                $params['port'] = 0;
             } elseif (isset($container['memcache.host']) && isset($container['memcache.port'])) {
-                $memcache->addServer(
-                    $container['memcache.host'],
-                    $container['memcache.port']
-                );
+                $params['host'] = $container['memcache.host'];
+                $params['port'] = $container['memcache.port'];
             }
-            // TODO: Set namespace.
+            return new CacheCollection(
+                new MemcacheDriver($params),
+                $container['memcache.namespace']
+            );
         });
     }
 }
