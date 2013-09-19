@@ -22,17 +22,17 @@ class MemoryDriver implements StorageInterface
 
     public function delete($key)
     {
-        unset($storage[$key]);
+        unset($this->storage[$key]);
         return true;
     }
 
     public function get($key)
     {
-        if (isset($storage[$key])) {
-            if ($storage[$key][static::KEY_EXPIRE] < (new DateTime)) {
-                unset($storage[$key]);
+        if (isset($this->storage[$key])) {
+            if ($this->storage[$key][static::KEY_EXPIRE] < (new DateTime)) {
+                unset($this->storage[$key]);
             } else {
-                return $storage[$key][static::KEY_VALUE];
+                return $this->storage[$key][static::KEY_VALUE];
             }
         }
         return null;
@@ -43,7 +43,7 @@ class MemoryDriver implements StorageInterface
         if ($duration < 0) {
             return false;
         }
-        $storage[$key] = [
+        $this->storage[$key] = [
             static::KEY_EXPIRE  => new DateTime(
                 $duration > 0
                     ? '+' . intval($duration) . 'sec'
