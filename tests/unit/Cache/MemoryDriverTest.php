@@ -64,4 +64,14 @@ class MemoryDriverTest extends PHPUnit_Framework_TestCase
             'get() did not return the value, that was previously delete()d'
         );
     }
+
+    public function testSetWaitGet()
+    {
+        $this->driver->set(__METHOD__, __METHOD__, 1);
+        sleep(2);
+        $this->assertNull(
+            $this->driver->get(__METHOD__),
+            'get() did not return null after value expiry'
+        );
+    }
 }
