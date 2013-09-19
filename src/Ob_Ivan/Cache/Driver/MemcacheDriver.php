@@ -2,13 +2,15 @@
 namespace Ob_Ivan\Cache\Driver;
 
 use Memcache;
+use Ob_Ivan\Cache\StorageInterface;
 
-class MemcacheDriver implements DriverInterface
+class MemcacheDriver implements StorageInterface
 {
     const MAX_KEY_LENGTH   = 100;
     const NORMALIZE_PREFIX = 'n';
 
     protected $memcache;
+    protected $normalizedKeys = [];
     protected $params;
 
     public function __construct($params)
@@ -47,9 +49,11 @@ class MemcacheDriver implements DriverInterface
 
     protected function normalizeKey($key)
     {
-        if (strlen($key) > static::MAX_KEY_LENGTH) {
-            $key = static::NORMALIZE_PREFIX . md5($key);
+        if (! isset($this->normalizedKeys[$key])) {
+            $this->normalizedKeys[$key] = strlen($key) > static::MAX_KEY_LENGTH
+                ? static::NORMALIZE_PREFIX . md5($key)
+                : $key;
         }
-        return $key;
+        return $this->normalizedKeys[$key];
     }
 }

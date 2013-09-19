@@ -1,7 +1,7 @@
 <?php
-namespace Ob_Ivan\Cache\Driver;
+namespace Ob_Ivan\Cache;
 
-interface DriverInterface
+interface StorageInterface
 {
     public function delete($key);
 
