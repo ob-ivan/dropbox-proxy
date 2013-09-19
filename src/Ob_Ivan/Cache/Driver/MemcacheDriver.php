@@ -28,9 +28,9 @@ class MemcacheDriver implements StorageInterface
         return $this->getMemcache()->get($this->normalizeKey($key));
     }
 
-    public function set($key, $value, $duration)
+    public function set($key, $value, $duration = null)
     {
-        return $this->getMemcache()->set($this->normalizeKey($key), $value, 0, $duration);
+        return $this->getMemcache()->set($this->normalizeKey($key), $value, 0, intval($duration));
     }
 
     // protected //

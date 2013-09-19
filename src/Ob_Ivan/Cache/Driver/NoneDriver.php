@@ -15,7 +15,7 @@ class NoneDriver implements StorageInterface
         return null;
     }
 
-    public function set($key, $value, $duration)
+    public function set($key, $value, $duration = null)
     {
         return true;
     }

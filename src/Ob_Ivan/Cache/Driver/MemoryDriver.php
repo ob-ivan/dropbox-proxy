@@ -38,11 +38,14 @@ class MemoryDriver implements StorageInterface
         return null;
     }
 
-    public function set($key, $value, $duration)
+    public function set($key, $value, $duration = null)
     {
+        if ($duration < 0) {
+            return false;
+        }
         $storage[$key] = [
             static::KEY_EXPIRE  => new DateTime(
-                $duration
+                $duration > 0
                     ? '+' . intval($duration) . 'sec'
                     : '+10000years'
             ),

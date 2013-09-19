@@ -12,8 +12,9 @@ interface StorageInterface
      *
      *  @param  string  $key
      *  @param  mixed   $value
-     *  @param  integer $duration   Maximal lifetime for value, in seconds.
-     *  @return boolean             Whether operation was successful.
+     *  @param  integer $duration   null    Maximal lifetime for value, in seconds.
+     *                                      Null value stands for no expiry.
+     *  @return boolean                     Whether operation was successful.
     **/
-    public function set($key, $value, $duration);
+    public function set($key, $value, $duration = null);
 }

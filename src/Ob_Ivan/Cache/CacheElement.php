@@ -7,7 +7,7 @@ class CacheElement
     protected $key;
     protected $duration;
 
-    public function __construct(StorageInterface $storage, $key, $duration = 0)
+    public function __construct(StorageInterface $storage, $key, $duration = null)
     {
         $this->storage   = $storage;
         $this->key      = $key;
