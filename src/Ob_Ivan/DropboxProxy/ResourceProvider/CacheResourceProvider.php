@@ -41,20 +41,29 @@ class CacheResourceProvider implements ResourceProviderInterface
     function populate(ResourceContainer $container)
     {
         $container->register('cache', function ($container) {
-
-            // NEW
             $driverType = isset($container['cache.driver'])
                 ? $container['cache.driver']
                 : static::DRIVER_NONE;
 
             switch ($driverType) {
                 case static::DRIVER_NONE:
+                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
                     break;
 
                 case static::DRIVER_MEMORY:
+                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
                     break;
 
                 case static::DRIVER_MEMCACHE:
+                    $params = [];
+                    if (isset($container['cache.memcache.unix_socket'])) {
+                        $params['host'] = 'unix://' . $container['cache.memcache.unix_socket'];
+                        $params['port'] = 0;
+                    } elseif (isset($container['cache.memcache.host']) && isset($container['cache.memcache.port'])) {
+                        $params['host'] = $container['cache.memcache.host'];
+                        $params['port'] = $container['cache.memcache.port'];
+                    }
+                    $driver = new MemcacheDriver($params);
                     break;
 
                 case static::DRIVER_FILES:
@@ -66,18 +75,8 @@ class CacheResourceProvider implements ResourceProviderInterface
                 default:
                     throw new Exception('Unknown cache driver type "' . $driverType . '"');
             }
-
-            // OLD: memcache
-            $params = [];
-            if (isset($container['memcache.unix_socket'])) {
-                $params['host'] = 'unix://' . $container['memcache.unix_socket'];
-                $params['port'] = 0;
-            } elseif (isset($container['memcache.host']) && isset($container['memcache.port'])) {
-                $params['host'] = $container['memcache.host'];
-                $params['port'] = $container['memcache.port'];
-            }
             return new CacheCollection(
-                new MemcacheDriver($params),
+                $driver,
                 $container['memcache.namespace']
             );
         });
