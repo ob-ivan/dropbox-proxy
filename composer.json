@@ -1,6 +1,7 @@
 {
     "require" : {
         "dropbox/dropbox-sdk"   : "1.1.*",
+        "phpunit/phpunit"       : "3.7.*",
         "silex/silex"           : "1.*",
         "symfony/console"       : "2.3.*"
     },
