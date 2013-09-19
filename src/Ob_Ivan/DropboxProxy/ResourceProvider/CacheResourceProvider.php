@@ -21,11 +21,12 @@
  *  - [cache.memcache.unix_socket]
  *
  * Services:
- *  - [cache] instance of CacheInterface
+ *  - [cache] instance of Ob_Ivan\Cache\StorageInterface
 **/
 namespace Ob_Ivan\DropboxProxy\ResourceProvider;
 
 use Ob_Ivan\Cache\Driver\MemcacheDriver;
+use Ob_Ivan\Cache\Driver\MemoryDriver;
 use Ob_Ivan\Cache\CacheCollection;
 use Ob_Ivan\ResourceContainer\ResourceContainer;
 use Ob_Ivan\ResourceContainer\ResourceProviderInterface;
@@ -51,7 +52,7 @@ class CacheResourceProvider implements ResourceProviderInterface
                     break;
 
                 case static::DRIVER_MEMORY:
-                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
+                    $driver = new MemoryDriver();
                     break;
 
                 case static::DRIVER_MEMCACHE:
