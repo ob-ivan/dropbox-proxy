@@ -1,33 +1,31 @@
 <?php
 namespace Ob_Ivan\Cache;
 
-use Ob_Ivan\Cache\Driver\DriverInterface;
-
 class CacheElement
 {
-    protected $driver;
+    protected $storage;
     protected $key;
     protected $duration;
 
-    public function __construct(DriverInterface $driver, $key, $duration = 0)
+    public function __construct(StorageInterface $storage, $key, $duration = null)
     {
-        $this->driver   = $driver;
+        $this->storage   = $storage;
         $this->key      = $key;
         $this->duration = $duration;
     }
 
     public function delete()
     {
-        return $this->driver->delete($this->key);
+        return $this->storage->delete($this->key);
     }
 
     public function get()
     {
-        return $this->driver->get($this->key);
+        return $this->storage->get($this->key);
     }
 
     public function set($value)
     {
-        return $this->driver->set($this->key, $value, $this->duration);
+        return $this->storage->set($this->key, $value, $this->duration);
     }
 }
