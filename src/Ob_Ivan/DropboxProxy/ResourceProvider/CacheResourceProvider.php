@@ -5,8 +5,7 @@
  * Parameters:
  *  - [cache.driver]
  *      Type of cache engine to use. Possible options:
- *          'none'      No caching provided at all. Calling set() does nothing.
- *          'memory'    Runtime memory cache.
+ *          'memory'    Runtime in-memory cache.
  *          'memcache'  Connects to a single memcache server.
  *          'files'     Writes and reads files on local hard drive. Not implemented.
  *          'db'        Connects to database. Not implemented.
@@ -33,7 +32,6 @@ use Ob_Ivan\ResourceContainer\ResourceProviderInterface;
 
 class CacheResourceProvider implements ResourceProviderInterface
 {
-    const DRIVER_NONE       = 'none';
     const DRIVER_MEMORY     = 'memory';
     const DRIVER_MEMCACHE   = 'memcache';
     const DRIVER_FILES      = 'files';
@@ -44,13 +42,9 @@ class CacheResourceProvider implements ResourceProviderInterface
         $container->register('cache', function ($container) {
             $driverType = isset($container['cache.driver'])
                 ? $container['cache.driver']
-                : static::DRIVER_NONE;
+                : static::DRIVER_MEMORY;
 
             switch ($driverType) {
-                case static::DRIVER_NONE:
-                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
-                    break;
-
                 case static::DRIVER_MEMORY:
                     $driver = new MemoryDriver();
                     break;
@@ -63,6 +57,8 @@ class CacheResourceProvider implements ResourceProviderInterface
                     } elseif (isset($container['cache.memcache.host']) && isset($container['cache.memcache.port'])) {
                         $params['host'] = $container['cache.memcache.host'];
                         $params['port'] = $container['cache.memcache.port'];
+                    } else {
+                        throw new Exception('Could not find config parameters for memcache');
                     }
                     $driver = new MemcacheDriver($params);
                     break;
