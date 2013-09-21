@@ -62,9 +62,9 @@ class CacheCollection implements StorageInterface
         return $this->storage->get($this->getKey($key));
     }
 
-    public function set($key, $value, $duration = null)
+    public function set($key, $value, $expiry = null)
     {
-        return $this->storage->set($this->getKey($key), $value, $duration);
+        return $this->storage->set($this->getKey($key), $value, $expiry);
     }
 
     // protected //

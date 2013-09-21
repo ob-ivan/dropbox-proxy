@@ -21,13 +21,19 @@ interface StorageInterface
     public function get($key);
 
     /**
-     * Store a value under specified key for a duration no longer than specified.
+     * Store a value under specified key, optionally limiting its lifetime.
+     *
+     * Expiry date can be specified in one of several ways:
+     *  - Null or integer zero means never expire.
+     *  - Positive integer values are interpreted as number of seconds
+     *    for the value to live.
+     *  - DateTime object denotes exact date and time since when the value
+     *    will be considered expired and eventually pruned from the storage.
      *
      *  @param  string  $key
      *  @param  mixed   $value
-     *  @param  integer $duration   null    Maximal lifetime for value, in seconds.
-     *                                      Null value stands for no expiry.
+     *  @param  integer $expiry     null
      *  @return boolean                     Whether operation was successful.
     **/
-    public function set($key, $value, $duration = null);
+    public function set($key, $value, $expiry = null);
 }
