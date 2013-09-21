@@ -51,8 +51,14 @@ class WebApplication
             return $app['toolbox']['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
-        // Download a file from filesystem storage.
+        // NEW: Get the direct download link from dropbox and redirect there.
+        // OLD: Download a file from filesystem storage.
         $app->get('/{file}', function ($file) use ($app) {
+            // NEW
+            throw new Exception('Downloading files is not implemented yet.');
+
+            // OLD
+            /*
             $filename = implode(DIRECTORY_SEPARATOR, [
                 $app['toolbox']['filesystem.storage'],
                 $file,
@@ -64,11 +70,11 @@ class WebApplication
                 ;
             }
             return $app->sendFile($filename);
+            */
         })->bind('download_file');
 
         // List available files.
         $app->get('/', function () use ($app) {
-
             // Get folder metadata.
             $toolbox    = $app['toolbox'];
             $client     = $toolbox['dropbox.client'];
@@ -91,7 +97,6 @@ class WebApplication
                 $folderMetadata = $client->getMetadataWithChildren($remoteRoot);
                 $metadataCacheElement->set($folderMetadata);
             }
-
             return $app->render('index.twig', [
                 'metadata' => $folderMetadata,
             ]);
