@@ -96,18 +96,20 @@ class UploadCommand extends Command
                 continue;
             }
 
-            // Handle usual files.
+            // Force upload disregarding any server-side content.
             $remotePath = implode('/', [$remoteRoot, $relativePath]);
             $output->writeln('Uploading ' . $localPath . ' to ' . $remotePath);
             $file = fopen($localPath, 'rb');
-            $result = $client->uploadFile($remotePath, WriteMode::add(), $file);
+            $response = $client->uploadFile($remotePath, WriteMode::force(), $file);
             fclose($file);
-            if (is_array($result) && isset($result['path']) && $result['path'] === $remotePath) {
+
+            // Handle response.
+            if (is_array($response) && isset($response['path']) && $response['path'] === $remotePath) {
                 $output->writeln('Successfully uploaded ' . $localPath . ' to ' . $remotePath);
                 $checksumCacheElement->set($actualChecksum);
                 ++$successCount;
             } else {
-                $output->writeln('Unexpected result while uploading ' . $localPath . ' to ' . $remotePath);
+                $output->writeln('Unexpected response while uploading ' . $localPath . ' to ' . $remotePath);
                 ++$errorCount;
             }
         }
