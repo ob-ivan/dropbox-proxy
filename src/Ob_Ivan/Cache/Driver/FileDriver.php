@@ -93,7 +93,7 @@ class FileDriver implements StorageInterface
         return new DateTime(
             $duration > 0
             ? '+' . intval($duration) . 'sec'
-            : '+10000years'
+            : '+1000years'
         );
     }
 
