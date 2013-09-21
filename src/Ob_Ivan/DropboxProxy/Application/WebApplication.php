@@ -51,26 +51,18 @@ class WebApplication
             return $app['toolbox']['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
-        // NEW: Get the direct download link from dropbox and redirect there.
-        // OLD: Download a file from filesystem storage.
+        // Get the direct download link from dropbox and redirect there.
         $app->get('/{file}', function ($file) use ($app) {
-            // NEW
-            throw new Exception('Downloading files is not implemented yet.');
-
-            // OLD
-            /*
-            $filename = implode(DIRECTORY_SEPARATOR, [
-                $app['toolbox']['filesystem.storage'],
-                $file,
-            ]);
-            if (! file_exists($filename)) {
-                return
-                    'File "' . $file . '" was not found on server. ' .
-                    'Check for typos or contact system administrator.'
-                ;
+            $toolbox    = $app['toolbox'];
+            $client     = $toolbox['dropbox.client'];
+            $remoteRoot = $toolbox['dropbox.root'];
+            $linkCacheCollection = $toolbox['cache']->collection('directLink');
+            $link = $linkCacheCollection->get($file);
+            if (! $link) {
+                list($link, $expiry) = $client->createTemporaryDirectLink(implode('/', [$remoteRoot, $file]));
+                $linkCacheCollection->set($file, $link, $expiry);
             }
-            return $app->sendFile($filename);
-            */
+            return $app->redirect($link);
         })->bind('download_file');
 
         // List available files.
