@@ -34,6 +34,10 @@ class WebApplication
         // Create an app and pass resource toolbox into it.
         $app = $this->app = new WrappedApplication();
         $app['toolbox'] = (new ToolboxFactory)->getToolbox($configPath, $storagePath);
+        $app['twig.path'] = implode(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'view']);
+        if (isset($app['toolbox']['debug'])) {
+            $app['debug'] = $app['toolbox']['debug'];
+        }
 
         // Routing and controllers //
 
@@ -47,31 +51,47 @@ class WebApplication
             return $app['toolbox']['dropbox.access_token'];
         })->bind('dropbox-auth-finish');
 
-        // Download a file from filesystem storage.
+        // Get the direct download link from dropbox and redirect there.
         $app->get('/{file}', function ($file) use ($app) {
-            $filename = implode(DIRECTORY_SEPARATOR, [
-                $app['toolbox']['filesystem.storage'],
-                $file,
-            ]);
-            if (! file_exists($filename)) {
-                return
-                    'File "' . $file . '" was not found on server. ' .
-                    'Check for typos or contact system administrator.'
-                ;
+            $toolbox    = $app['toolbox'];
+            $client     = $toolbox['dropbox.client'];
+            $remoteRoot = $toolbox['dropbox.root'];
+            $linkCacheCollection = $toolbox['cache']->collection('directLink');
+            $link = $linkCacheCollection->get($file);
+            if (! $link) {
+                list($link, $expiry) = $client->createTemporaryDirectLink(implode('/', [$remoteRoot, $file]));
+                $linkCacheCollection->set($file, $link, $expiry);
             }
-            return $app->sendFile($filename);
-        });
+            return $app->redirect($link);
+        })->bind('download_file');
 
         // List available files.
         $app->get('/', function () use ($app) {
-
-            $folderMetadata = $app['toolbox']['dropbox.client']
-                ->getMetadataWithChildren($app['toolbox']['dropbox.root']);
-            $contents = $folderMetadata['contents'];
-            return '<pre>' . print_r($contents, true) . '</pre>'; // debug
-
-            // TODO: folder listing
-            return 'Folder listing is not yet supported. Please come back later.';
+            // Get folder metadata.
+            $toolbox    = $app['toolbox'];
+            $client     = $toolbox['dropbox.client'];
+            $remoteRoot = $toolbox['dropbox.root'];
+            $metadataCacheElement   = $toolbox['cache']->collection('metadata')->element($remoteRoot);
+            $storedMetadata         = $metadataCacheElement->get();
+            if ($storedMetadata) {
+                $storedHash = $storedMetadata['hash'];
+                list($changed, $remoteMetadata) = $client->getMetadataWithChildrenIfChanged($remoteRoot, $storedHash);
+                /**
+                 * It is either (true, actual-metadata), or (false, null).
+                **/
+                if ($changed) {
+                    $metadataCacheElement->set($remoteMetadata);
+                    $folderMetadata = $remoteMetadata;
+                } else {
+                    $folderMetadata = $storedMetadata;
+                }
+            } else {
+                $folderMetadata = $client->getMetadataWithChildren($remoteRoot);
+                $metadataCacheElement->set($folderMetadata);
+            }
+            return $app->render('index.twig', [
+                'metadata' => $folderMetadata,
+            ]);
         });
     }
 
