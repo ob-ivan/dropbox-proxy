@@ -25,7 +25,7 @@
             <ul>
                 {% for file in metadata.contents %}
                     <li>
-                        {{ file.path }}
+                        {{ basename(file.path) }}
                         ({{ file.size }})
                     </li>
                 {% endfor %}
