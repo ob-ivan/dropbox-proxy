@@ -7,6 +7,8 @@ use Ob_Ivan\Cache\StorageInterface;
 
 class FileDriver implements StorageInterface
 {
+    use ExpiryTrait;
+
     const DATE_FORMAT       = 'Y-m-d H:i:s';
     const EXPIRY_SEPARATOR  = '#';
     const FILE_EXTENSION    = '.txt';
@@ -53,7 +55,7 @@ class FileDriver implements StorageInterface
             $this->unlink($filename);
             return null;
         }
-        if ($expiry < (new DateTime)) {
+        if ($this->isExpired($expiry)) {
             $this->unlink($filename);
             return null;
         }
@@ -67,8 +69,11 @@ class FileDriver implements StorageInterface
         return $value;
     }
 
-    public function set($key, $value, $duration = null)
+    public function set($key, $value, $expiry = null)
     {
+        if ($this->isExpired($expiry)) {
+            return false;
+        }
         $filename = $this->getFileName($key);
         $dirname = dirname($filename);
         if (! is_dir($dirname)) {
@@ -77,7 +82,7 @@ class FileDriver implements StorageInterface
         $writtenBytes = file_put_contents(
             $filename,
             implode(static::EXPIRY_SEPARATOR, [
-                $this->getExpiry($duration)->format(static::DATE_FORMAT),
+                $this->normalizeExpiry($expiry)->format(static::DATE_FORMAT),
                 serialize($value),
             ]),
             LOCK_EX
@@ -86,16 +91,6 @@ class FileDriver implements StorageInterface
     }
 
     // protected //
-
-    // TODO: Eliminate code reduplication with MemoryDriver.
-    protected function getExpiry($duration = null)
-    {
-        return new DateTime(
-            $duration > 0
-            ? '+' . intval($duration) . 'sec'
-            : '+1000years'
-        );
-    }
 
     /**
      * Hashes key to make sure it will not contain any special chars.
