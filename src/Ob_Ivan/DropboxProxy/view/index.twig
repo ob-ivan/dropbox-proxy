@@ -1,0 +1,39 @@
+{#
+    index.twig - display list of files in remote folder.
+
+    Parameters:
+        metadata {
+            modified            Last modification date in the standard date format.
+            path                Absolute remote folder path.
+            contents [
+                <index> {
+                    size        Size in human-readable format.
+                    bytes       Size in bytes.
+                    modified    Last modification date in the standard date format.
+                    path        Absolute remote file path.
+                }
+            ]
+        }
+#}
+<html>
+    <head>
+        <title>{{ metadata.path }} file listing</title>
+    </head>
+    <body>
+        <h1>Files in "{{ metadata.path }}"</h1>
+        {% if metadata.contents is not empty %}
+            <ul>
+                {% for file in metadata.contents %}
+                    <li>
+                        {{ file.path }}
+                        ({{ file.size }})
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>
+                No files yet, sorry.
+            </p>
+        {% endif %}
+    </body>
+</html>
