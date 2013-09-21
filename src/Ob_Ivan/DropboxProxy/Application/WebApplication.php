@@ -33,7 +33,7 @@ class WebApplication
     {
         // Create an app and pass resource toolbox into it.
         $app = $this->app = new WrappedApplication();
-        $app['toolbox'] = ToolboxFactory::getToolbox($configPath, $storagePath);
+        $app['toolbox'] = (new ToolboxFactory)->getToolbox($configPath, $storagePath);
 
         // Routing and controllers //
 
