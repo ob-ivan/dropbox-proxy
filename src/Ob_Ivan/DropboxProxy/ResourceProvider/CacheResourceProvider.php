@@ -20,7 +20,7 @@
  *  - [cache.memcache.unix_socket]
  *
  * Services:
- *  - [cache] instance of Ob_Ivan\Cache\StorageInterface
+ *  - [cache] instance of Ob_Ivan\Cache\CacheCollection
 **/
 namespace Ob_Ivan\DropboxProxy\ResourceProvider;
 

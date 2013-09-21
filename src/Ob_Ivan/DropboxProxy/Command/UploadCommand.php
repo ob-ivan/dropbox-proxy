@@ -52,36 +52,53 @@ class UploadCommand extends Command
         $successCount   = 0;
         $skippedCount   = 0;
         $errorCount     = 0;
-        $toolbox = $this->getToolbox();
-        $root    = $toolbox['dropbox.root'];
-        $client  = $toolbox['dropbox.client'];
+        $toolbox    = $this->getToolbox();
+        $remoteRoot = $toolbox['dropbox.root'];
+        $client     = $toolbox['dropbox.client'];
+        $checksumCacheCollection = $toolbox['cache']->collection('checksum');
         foreach ($pathList as $relativePath) {
 
-            // TODO: Check dropbox folder to see if the same file is already
-            // present there.
-
+            // Check whether local file is accessible.
             $localPath = implode(DIRECTORY_SEPARATOR, [
                 $this->getStoragePath(),
                 $relativePath
             ]);
+            if (! file_exists($localPath)) {
+                $output->writeln('Path "' . $localPath . '" does not exist, skipping.');
+                ++$skippedCount;
+                continue;
+            }
             if (! is_readable($localPath)) {
                 $output->writeln('Cannot read path "' . $localPath . '", skipping.');
                 ++$skippedCount;
                 continue;
             }
             if (is_dir($localPath)) {
+                // TODO: Implement directory recursion, when -R option is specified.
                 $output->writeln('Path "' . $localPath . '" is a directory, skipping.');
                 ++$skippedCount;
                 continue;
             }
             if (! is_file($localPath)) {
+                // Then what is it? A link? Won't work.
                 $output->writeln('Path "' . $localPath . '" is not a file, skipping.');
                 ++$skippedCount;
                 continue;
             }
 
+            // Check local file hash to see if it has changed since the previous upload.
+            $checksumCacheElement = $checksumCacheCollection->element($relativePath);
+            $actualChecksum = md5_file($localPath);
+            $storedChecksum = $checksumCacheElement->get();
+            if ($storedChecksum === $actualChecksum) {
+                $output->writeln('Path "' . $localPath . '" has no changes, skipping.');
+                ++$skippedCount;
+                continue;
+            }
+            $checksumCacheElement->set($actualChecksum);
+
             // Handle usual files.
-            $remotePath = implode('/', [$root, $relativePath]);
+            $remotePath = implode('/', [$remoteRoot, $relativePath]);
             $output->writeln('Uploading ' . $localPath . ' to ' . $remotePath);
             $file = fopen($localPath, 'rb');
             $result = $client->uploadFile($remotePath, WriteMode::add(), $file);
