@@ -6,6 +6,8 @@ use Ob_Ivan\Cache\StorageInterface;
 
 class MemcacheDriver implements StorageInterface
 {
+    use ExpiryTrait;
+
     const MAX_KEY_LENGTH   = 100;
     const NORMALIZE_PREFIX = 'n';
 
@@ -36,9 +38,17 @@ class MemcacheDriver implements StorageInterface
         return $this->getMemcache()->get($this->normalizeKey($key));
     }
 
-    public function set($key, $value, $duration = null)
+    public function set($key, $value, $expiry = null)
     {
-        return $this->getMemcache()->set($this->normalizeKey($key), $value, 0, intval($duration));
+        if ($this->isExpired($expiry)) {
+            return false;
+        }
+        return $this->getMemcache()->set(
+            $this->normalizeKey($key),
+            $value,
+            0,
+            $this->normalizeExpiry($expiry)
+        );
     }
 
     // protected //

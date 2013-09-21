@@ -5,13 +5,13 @@ class CacheElement
 {
     protected $storage;
     protected $key;
-    protected $duration;
+    protected $expiry;
 
-    public function __construct(StorageInterface $storage, $key, $duration = null)
+    public function __construct(StorageInterface $storage, $key, $expiry = null)
     {
-        $this->storage   = $storage;
+        $this->storage  = $storage;
         $this->key      = $key;
-        $this->duration = $duration;
+        $this->expiry   = $expiry;
     }
 
     public function delete()
@@ -26,6 +26,6 @@ class CacheElement
 
     public function set($value)
     {
-        return $this->storage->set($this->key, $value, $this->duration);
+        return $this->storage->set($this->key, $value, $this->expiry);
     }
 }

@@ -6,13 +6,15 @@ use Ob_Ivan\Cache\StorageInterface;
 
 class MemoryDriver implements StorageInterface
 {
-    const KEY_EXPIRE = __LINE__;
+    use ExpiryTrait;
+
+    const KEY_EXPIRY = __LINE__;
     const KEY_VALUE  = __LINE__;
 
     /**
      *  @var [
      *      <string key> => [
-     *          KEY_EXPIRE  => <DateTime Expiration date>,
+     *          KEY_EXPIRY  => <DateTime Expiration date>,
      *          KEY_VALUE   => <mixed    Stored value>,
      *      ],
      *      ...
@@ -29,7 +31,7 @@ class MemoryDriver implements StorageInterface
     public function get($key)
     {
         if (isset($this->storage[$key])) {
-            if ($this->storage[$key][static::KEY_EXPIRE] < (new DateTime)) {
+            if ($this->isExpired($this->storage[$key][static::KEY_EXPIRY])) {
                 unset($this->storage[$key]);
             } else {
                 return $this->storage[$key][static::KEY_VALUE];
@@ -38,26 +40,15 @@ class MemoryDriver implements StorageInterface
         return null;
     }
 
-    public function set($key, $value, $duration = null)
+    public function set($key, $value, $expiry = null)
     {
-        if ($duration < 0) {
+        if ($this->isExpired($expiry)) {
             return false;
         }
         $this->storage[$key] = [
-            static::KEY_EXPIRE  => $this->getExpiry($duration),
+            static::KEY_EXPIRY  => $this->normalizeExpiry($expiry),
             static::KEY_VALUE   => $value,
         ];
         return true;
-    }
-
-    // protected //
-
-    protected function getExpiry($duration = null)
-    {
-        return new DateTime(
-            $duration > 0
-            ? '+' . intval($duration) . 'sec'
-            : '+1000years'
-        );
     }
 }
