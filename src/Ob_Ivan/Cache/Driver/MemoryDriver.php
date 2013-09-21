@@ -44,13 +44,20 @@ class MemoryDriver implements StorageInterface
             return false;
         }
         $this->storage[$key] = [
-            static::KEY_EXPIRE  => new DateTime(
-                $duration > 0
-                    ? '+' . intval($duration) . 'sec'
-                    : '+10000years'
-            ),
+            static::KEY_EXPIRE  => $this->getExpiry($duration),
             static::KEY_VALUE   => $value,
         ];
         return true;
+    }
+
+    // protected //
+
+    protected function getExpiry($duration = null)
+    {
+        return new DateTime(
+            $duration > 0
+            ? '+' . intval($duration) . 'sec'
+            : '+10000years'
+        );
     }
 }

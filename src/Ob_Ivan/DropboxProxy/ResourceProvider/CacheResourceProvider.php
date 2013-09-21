@@ -7,7 +7,7 @@
  *      Type of cache engine to use. Possible options:
  *          'memory'    Runtime in-memory cache.
  *          'memcache'  Connects to a single memcache server.
- *          'files'     Writes and reads files on local hard drive. Not implemented.
+ *          'files'     Writes and reads files on local hard drive.
  *          'db'        Connects to database. Not implemented.
  *
  *  - [cache.namespace]
@@ -18,6 +18,7 @@
  *  - [cache.memcache.host]
  *  - [cache.memcache.port]
  *  - [cache.memcache.unix_socket]
+ *  - [cache.files.prefix]          MUST include trailing slash when specifying a folder
  *
  * Services:
  *  - [cache] instance of Ob_Ivan\Cache\StorageInterface
@@ -37,45 +38,55 @@ class CacheResourceProvider implements ResourceProviderInterface
     const DRIVER_FILES      = 'files';
     const DRIVER_DB         = 'db';
 
-    function populate(ResourceContainer $container)
+    public function populate(ResourceContainer $container)
     {
         $container->register('cache', function ($container) {
             $driverType = isset($container['cache.driver'])
                 ? $container['cache.driver']
                 : static::DRIVER_MEMORY;
 
-            switch ($driverType) {
-                case static::DRIVER_MEMORY:
-                    $driver = new MemoryDriver();
-                    break;
-
-                case static::DRIVER_MEMCACHE:
-                    $params = [];
-                    if (isset($container['cache.memcache.unix_socket'])) {
-                        $params['host'] = 'unix://' . $container['cache.memcache.unix_socket'];
-                        $params['port'] = 0;
-                    } elseif (isset($container['cache.memcache.host']) && isset($container['cache.memcache.port'])) {
-                        $params['host'] = $container['cache.memcache.host'];
-                        $params['port'] = $container['cache.memcache.port'];
-                    } else {
-                        throw new Exception('Could not find config parameters for memcache');
-                    }
-                    $driver = new MemcacheDriver($params);
-                    break;
-
-                case static::DRIVER_FILES:
-                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
-
-                case static::DRIVER_DB:
-                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
-
-                default:
-                    throw new Exception('Unknown cache driver type "' . $driverType . '"');
-            }
             return new CacheCollection(
-                $driver,
+                $this->getDriver($driverType, $container),
                 $container['memcache.namespace']
             );
         });
+    }
+
+    // protected //
+
+    protected function getDriver($driverType, $container)
+    {
+        switch ($driverType) {
+            case static::DRIVER_MEMORY:
+                return new MemoryDriver();
+
+            case static::DRIVER_MEMCACHE:
+                $params = [];
+                if (isset($container['cache.memcache.unix_socket'])) {
+                    $params['host'] = 'unix://' . $container['cache.memcache.unix_socket'];
+                    $params['port'] = 0;
+                } elseif (isset($container['cache.memcache.host']) && isset($container['cache.memcache.port'])) {
+                    $params['host'] = $container['cache.memcache.host'];
+                    $params['port'] = $container['cache.memcache.port'];
+                } else {
+                    throw new Exception('Could not find config parameters for memcache');
+                }
+                return new MemcacheDriver($params);
+
+            case static::DRIVER_FILES:
+                $params = [];
+                if (isset($container['cache.files.prefix'])) {
+                    $params['file_prefix'] = $container['cache.files.prefix'];
+                } else {
+                    throw new Exception('Could not find config parameters for file cache');
+                }
+                return new FileDriver($params);
+
+            case static::DRIVER_DB:
+                throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
+
+            default:
+                throw new Exception('Unknown cache driver type "' . $driverType . '"');
+        }
     }
 }
