@@ -8,6 +8,8 @@
  * Replace words in upper case with appropriate values.
 **/
 {
+    // DROPBOX //
+
     /**
      * Your application credentials. If you don't know what it is, go to
      * https://www.dropbox.com/developers/apps and create an application,
@@ -52,5 +54,42 @@
     **/
     "dropbox.access_token"      : "ACCESS_TOKEN",
 
+    // CACHE //
 
+    /**
+     * Caching driver.
+     *
+     * Available options:
+     *  "memory"
+     *  "memcache"
+     *  "files"     not implemented
+     *  "db"        not implemented
+     *
+     * Defaults to 'memory' which does not store values between application runs
+     * and is a poor guess for communicating with dropbox API.
+     *
+     * Memcache is the recommended solution.
+     *
+     * You can also opt to implement "files", or "db", or any driver you fancy.
+    **/
+    "cache.driver" : "memory",
+
+    /**
+     * Namespace is a string that will be prefixed to each key in the cache storage
+     * to keep sure there are no collision with any other applications using
+     * the same storage.
+     *
+     * Defaults to empty string, but the same template as in
+     * "dropbox.client_identifier" is recommended.
+    **/
+    "cache.namespace" : "APP_NAME/APP_VERSION",
+
+    /**
+     * Memcache connection parameters.
+     *
+     * If "unix_socket" is present it is preferred over "host" and "port" params.
+    **/
+    "cache.memcache.unix_socket"    : "PATH_TO_MEMCACHE_SOCKET",
+    "cache.memcache.host"           : "MEMCACHE_HOST",
+    "cache.memcache.port"           : "MEMCACHE_PORT",
 }
