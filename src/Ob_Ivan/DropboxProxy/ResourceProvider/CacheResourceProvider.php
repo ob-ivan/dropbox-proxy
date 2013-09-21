@@ -64,7 +64,14 @@ class CacheResourceProvider implements ResourceProviderInterface
                     break;
 
                 case static::DRIVER_FILES:
-                    throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
+                    $params = [];
+                    if (isset($container['cache.files.prefix'])) {
+                        $params['file_prefix'] = $container['cache.files.prefix'];
+                    } else {
+                        throw new Exception('Could not find config parameters for file cache');
+                    }
+                    $driver = new FileDriver($params);
+                    break;
 
                 case static::DRIVER_DB:
                     throw new Exception('Cache driver type "' . $driverType . '" is not implemented yet');
