@@ -6,7 +6,7 @@ namespace Ob_Ivan\Cache\Driver;
 
 use DateTime;
 use Exception as AnyException;
-use Ob_Ivan\Cache\StorageInterface
+use Ob_Ivan\Cache\StorageInterface;
 
 class FileDriver implements StorageInterface
 {
@@ -33,7 +33,7 @@ class FileDriver implements StorageInterface
 
     public function delete($key)
     {
-        $this->unlink($this->getFileName($key);
+        $this->unlink($this->getFileName($key));
     }
 
     public function get($key)
@@ -68,7 +68,7 @@ class FileDriver implements StorageInterface
         return $value;
     }
 
-    public function set($key, $value, $duration)
+    public function set($key, $value, $duration = null)
     {
         $filename = $this->getFileName($key);
         if (! is_writable($filename)) {
