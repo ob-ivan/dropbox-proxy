@@ -70,8 +70,12 @@ class FileDriver implements StorageInterface
 
     public function set($key, $value, $duration)
     {
+        $filename = $this->getFileName($key);
+        if (! is_writable($filename)) {
+            mkdir(dirname($filename), 0777, true);
+        }
         $writtenBytes = file_put_contents(
-            $this->getFileName($key),
+            $filename,
             implode(static::EXPIRY_SEPARATOR, [
                 $this->getExpiry($duration)->format(static::DATE_FORMAT),
                 serialize($value),
