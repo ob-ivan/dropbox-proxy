@@ -95,7 +95,6 @@ class UploadCommand extends Command
                 ++$skippedCount;
                 continue;
             }
-            $checksumCacheElement->set($actualChecksum);
 
             // Handle usual files.
             $remotePath = implode('/', [$remoteRoot, $relativePath]);
@@ -105,6 +104,7 @@ class UploadCommand extends Command
             fclose($file);
             if (is_array($result) && isset($result['path']) && $result['path'] === $remotePath) {
                 $output->writeln('Successfully uploaded ' . $localPath . ' to ' . $remotePath);
+                $checksumCacheElement->set($actualChecksum);
                 ++$successCount;
             } else {
                 $output->writeln('Unexpected result while uploading ' . $localPath . ' to ' . $remotePath);
