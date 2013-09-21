@@ -13,10 +13,18 @@ class MemcacheDriver implements StorageInterface
     protected $normalizedKeys = [];
     protected $params;
 
+    /**
+     *  @param  [
+     *      'host'  => <string  Hostname, or 'unix://$pathToSocket' for unix-socket>,
+     *      'port'  => <integer Port number, or 0 for unix-socket>,
+     *  ]   $params
+    **/
     public function __construct($params)
     {
         $this->params = $params;
     }
+
+    // public : StorageInterface //
 
     public function delete($key)
     {
