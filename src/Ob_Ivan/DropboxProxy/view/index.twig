@@ -25,7 +25,10 @@
             <ul>
                 {% for file in metadata.contents %}
                     <li>
-                        {{ basename(file.path) }}
+                        {% set filename = basename(file.path) %}
+                        <a href="{{ path('download_file', { file : filename }) }}">
+                            {{- filename -}}
+                        </a>
                         ({{ file.size }})
                     </li>
                 {% endfor %}

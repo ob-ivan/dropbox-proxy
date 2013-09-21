@@ -35,6 +35,9 @@ class WebApplication
         $app = $this->app = new WrappedApplication();
         $app['toolbox'] = (new ToolboxFactory)->getToolbox($configPath, $storagePath);
         $app['twig.path'] = implode(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'view']);
+        if (isset($app['toolbox']['debug'])) {
+            $app['debug'] = $app['toolbox']['debug'];
+        }
 
         // Routing and controllers //
 
@@ -61,7 +64,7 @@ class WebApplication
                 ;
             }
             return $app->sendFile($filename);
-        });
+        })->bind('download_file');
 
         // List available files.
         $app->get('/', function () use ($app) {
