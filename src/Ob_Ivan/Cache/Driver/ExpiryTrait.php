@@ -1,6 +1,8 @@
 <?php
 namespace Ob_Ivan\Cache\Driver;
 
+use DateTime;
+
 trait ExpiryTrait
 {
     protected function normalizeExpiry($expiry)
