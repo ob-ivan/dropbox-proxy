@@ -92,4 +92,9 @@
     "cache.memcache.unix_socket"    : "PATH_TO_MEMCACHE_SOCKET",
     "cache.memcache.host"           : "MEMCACHE_HOST",
     "cache.memcache.port"           : "MEMCACHE_PORT",
+
+    /**
+     * File cache parameters.
+    **/
+    "cache.files.folder"            : "PATH_TO_CACHE_FOLDER",
 }
