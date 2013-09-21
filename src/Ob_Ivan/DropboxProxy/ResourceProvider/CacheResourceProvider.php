@@ -18,13 +18,14 @@
  *  - [cache.memcache.host]
  *  - [cache.memcache.port]
  *  - [cache.memcache.unix_socket]
- *  - [cache.files.prefix]          MUST include trailing slash when specifying a folder
+ *  - [cache.files.folder]
  *
  * Services:
- *  - [cache] instance of Ob_Ivan\Cache\StorageInterface
+ *  - [cache] instance of Ob_Ivan\Cache\CacheCollection
 **/
 namespace Ob_Ivan\DropboxProxy\ResourceProvider;
 
+use Ob_Ivan\Cache\Driver\FileDriver;
 use Ob_Ivan\Cache\Driver\MemcacheDriver;
 use Ob_Ivan\Cache\Driver\MemoryDriver;
 use Ob_Ivan\Cache\CacheCollection;
@@ -47,7 +48,9 @@ class CacheResourceProvider implements ResourceProviderInterface
 
             return new CacheCollection(
                 $this->getDriver($driverType, $container),
-                $container['memcache.namespace']
+                isset($container['cache.namespace'])
+                    ? $container['cache.namespace']
+                    : ''
             );
         });
     }
@@ -75,8 +78,8 @@ class CacheResourceProvider implements ResourceProviderInterface
 
             case static::DRIVER_FILES:
                 $params = [];
-                if (isset($container['cache.files.prefix'])) {
-                    $params['file_prefix'] = $container['cache.files.prefix'];
+                if (isset($container['cache.files.folder'])) {
+                    $params['cache_dir'] = $container['cache.files.folder'];
                 } else {
                     throw new Exception('Could not find config parameters for file cache');
                 }

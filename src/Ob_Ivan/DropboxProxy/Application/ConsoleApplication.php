@@ -28,7 +28,7 @@ class ConsoleApplication
     **/
     public function __construct($configPath, $storagePath = null)
     {
-        $toolbox = ToolboxFactory::getToolbox($configPath, $storagePath);
+        $toolbox = (new ToolboxFactory)->getToolbox($configPath, $storagePath);
 
         $this->app = new WrappedApplication();
         $command = new UploadCommand();

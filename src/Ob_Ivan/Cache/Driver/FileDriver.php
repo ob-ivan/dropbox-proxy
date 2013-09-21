@@ -1,7 +1,4 @@
 <?php
-/**
- * TODO: Eliminate code duplication with MemcacheDriver on key normalization.
-**/
 namespace Ob_Ivan\Cache\Driver;
 
 use DateTime;
@@ -13,15 +10,17 @@ class FileDriver implements StorageInterface
     const DATE_FORMAT       = 'Y-m-d H:i:s';
     const EXPIRY_SEPARATOR  = '#';
     const FILE_EXTENSION    = '.txt';
-    const MAX_KEY_LENGTH    = 100;
-    const NORMALIZE_PREFIX  = 'n';
 
-    protected $normalizedKeys = [];
+    /**
+     *  @var [<string key> => <string filename>]
+    **/
+    protected $filenames = [];
+
     protected $params;
 
     /**
      *  @param  [
-     *      'file_prefix' => <string Absolute path and a file prefix for storage files, e.g. '/cache/file_'>,
+     *      'cache_dir' => <string Absolute path to directory, e.g. '/www/myproject/cache/'>,
      *  ]   $params
     **/
     public function __construct($params)
@@ -71,8 +70,9 @@ class FileDriver implements StorageInterface
     public function set($key, $value, $duration = null)
     {
         $filename = $this->getFileName($key);
-        if (! is_writable($filename)) {
-            mkdir(dirname($filename), 0777, true);
+        $dirname = dirname($filename);
+        if (! is_dir($dirname)) {
+            mkdir($dirname, 0777, true);
         }
         $writtenBytes = file_put_contents(
             $filename,
@@ -93,27 +93,28 @@ class FileDriver implements StorageInterface
         return new DateTime(
             $duration > 0
             ? '+' . intval($duration) . 'sec'
-            : '+10000years'
+            : '+1000years'
         );
     }
 
+    /**
+     * Hashes key to make sure it will not contain any special chars.
+     *
+     * Also divides it into 3-level subfolders.
+    **/
     protected function getFileName($key)
     {
-        return implode('', [
-            $this->params['file_prefix'],
-            $this->normalizeKey($key),
-            static::FILE_EXTENSION
-        ]);
-    }
-
-    protected function normalizeKey($key)
-    {
-        if (! isset($this->normalizedKeys[$key])) {
-            $this->normalizedKeys[$key] = strlen($key) > static::MAX_KEY_LENGTH
-                ? static::NORMALIZE_PREFIX . md5($key)
-                : $key;
+        if (! isset($this->filenames[$key])) {
+            $hash = md5($key);
+            $this->filenames[$key] = implode(DIRECTORY_SEPARATOR, [
+                rtrim($this->params['cache_dir'], ' /\\'),
+                $hash[0],
+                $hash[1],
+                $hash[2],
+                $hash . static::FILE_EXTENSION,
+            ]);
         }
-        return $this->normalizedKeys[$key];
+        return $this->filenames[$key];
     }
 
     protected function unlink($filename)
