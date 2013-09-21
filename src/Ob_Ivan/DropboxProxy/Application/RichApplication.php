@@ -5,12 +5,15 @@
 namespace Ob_Ivan\DropboxProxy\Application;
 
 use Silex\Application as ParentApplication;
+use Silex\Application\TwigTrait;
 use Silex\Application\UrlGeneratorTrait;
 use Silex\Provider\SessionServiceProvider;
+use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\UrlGeneratorServiceProvider;
 
 class RichApplication extends ParentApplication
 {
+    use TwigTrait;
     use UrlGeneratorTrait;
 
     public function __construct($values = [])
@@ -33,6 +36,7 @@ class RichApplication extends ParentApplication
     {
         return [
             new SessionServiceProvider(),
+            new TwigServiceProvider(),
             new UrlGeneratorServiceProvider(),
         ];
     }
